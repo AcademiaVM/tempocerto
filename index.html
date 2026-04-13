@@ -1318,18 +1318,26 @@ const TEMPLATES=[
 
 function snapshot(){return JSON.parse(JSON.stringify({uf:state.uf,ano:state.ano,ativos:state.ativos,bancada:state.bancada,chapas:state.chapas,meuCandidato:state.meuCandidato}));}
 function migrateSnapshot(d){
- // Atualiza bancada para lista de partidos atual
  const currentSiglas=new Set(PARTIDOS.map(p=>p.s));
- const newBancada=Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
- // Se o cenário tem partidos que não existem mais, redistribui para PRD
- const extintos=['PSC','PTB','PATRIOTA','PROS','PMN','PMB'];
- d.bancada=newBancada;
- // Remove partidos extintos das chapas
+ const fedParts=new Set(Object.values(FED).flat());
+ // Atualiza bancada para lista atual
+ d.bancada=Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
+ // Remove partidos extintos das chapas + adiciona novos em proporcionais
+ const propCargos=['depfed','depest'];
  Object.keys(d.chapas||{}).forEach(k=>{
   if(!Array.isArray(d.chapas[k]))return;
+  // Remove extintos
   d.chapas[k].forEach(ch=>{
    ch.partidos=(ch.partidos||[]).filter(p=>currentSiglas.has(p));
   });
+  // Para proporcionais: adiciona partidos que faltam
+  if(propCargos.includes(k)&&d.chapas[k].length>0){
+   const jaPresentes=new Set();
+   d.chapas[k].forEach(ch=>(ch.partidos||[]).forEach(p=>jaPresentes.add(p)));
+   PARTIDOS.filter(p=>!jaPresentes.has(p.s)&&!fedParts.has(p.s)).forEach(p=>{
+    d.chapas[k].push({id:Date.now()+Math.random()+Math.random(),partidos:[p.s],federacoes:[],nome:p.s,ativo:true});
+   });
+  }
  });
  return d;
 }
