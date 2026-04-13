@@ -333,13 +333,14 @@ details[open] summary{margin-bottom:10px}
 .scn-card .acts{flex-wrap:wrap}
 
 @media(max-width:700px){
- /* Prevent ALL horizontal overflow */
- html,body{overflow-x:hidden!important;width:100vw!important}
- main{overflow-x:hidden!important;width:100%!important}
- .screen{overflow-x:hidden!important}
- .screen>*{max-width:100%!important}
- .work{overflow:hidden}
- .canvas,.chapa,.card,.hint,.hero-cal,.gcal,.scn-card,.tabpane,.insights,.insight{overflow:hidden;word-break:break-word}
+ /* Force everything to respect container width */
+ html{overflow-x:hidden}
+ body{overflow-x:hidden;width:100%}
+ main,section,.screen,.work,.canvas,.chapa,.card,.hint,.hero-cal,.gcal,.scn-card,.tabpane,.insights,.insight,.m-card,.chapa-h,.fed-list,.stat,.nav-foot,.home-bar,.scn-name-bar,.canvas-head{
+  max-width:100%;box-sizing:border-box;word-wrap:break-word;overflow-wrap:break-word
+ }
+ /* Labels that are too long */
+ label{white-space:normal!important;word-break:break-word}
 
  /* Header */
  header{padding:12px 12px}
@@ -415,31 +416,39 @@ details[open] summary{margin-bottom:10px}
  .prop-item label div div:first-child{font-size:12px!important}
  .star-btn{padding:6px 8px;font-size:16px}
 
- /* Hints */
- .hint{font-size:11px;padding:8px 10px}
+ /* Hints — force wrap */
+ .hint{font-size:11px;padding:8px 10px;max-width:100%!important;overflow-wrap:break-word}
+
+ /* m-cards fix */
+ .m-card{max-width:100%;overflow:hidden}
+ .m-card .m-grid{grid-template-columns:1fr 1fr;gap:4px}
+ .m-card .m-item{padding:6px 8px}
+ .m-card .m-item .m-val{font-size:14px}
+ .m-card .m-bar{max-width:100%}
 
  /* Results */
  .tabpane table.result-table{display:none!important}
  .mobile-results{display:block!important}
  .tabpane{overflow-x:hidden}
 
- /* Stats */
- .stat{flex-wrap:wrap;gap:6px}
- .stat .s{min-width:calc(50% - 3px);padding:8px 10px}
- .stat .s .v{font-size:16px}
- .stat .s .l{font-size:9px}
+ /* Stats — force 2x2 grid */
+ .stat{display:grid!important;grid-template-columns:1fr 1fr;gap:6px}
+ .stat .s{min-width:0;padding:8px 10px;width:100%}
+ .stat .s .v{font-size:15px}
+ .stat .s .l{font-size:8px;line-height:1.2}
 
- /* Hero cal */
- .hero-cal{padding:12px;border-radius:10px;overflow:hidden}
+ /* Hero cal — scroll horizontal */
+ .hero-cal{padding:12px;border-radius:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
  .hero-cal h3{font-size:13px}
  .hero-cal .sub{font-size:10px;margin-bottom:8px}
- .cal{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:3px}
- .cal .cd{min-height:50px;padding:4px;min-width:70px}
+ .cal{gap:3px;min-width:480px}
+ .cal .cd{min-height:50px;padding:4px}
  .cal .cd .dn{font-size:11px;margin-bottom:2px}
  .cal .cd .tg{font-size:7px;padding:1px 3px;margin-top:2px}
 
- /* Google Calendar */
- .gcal{padding:10px}
+ /* Google Calendar — scrollable wrapper */
+ .gcal{padding:10px;overflow:visible}
+ .gcal-grid{min-width:500px}
  .gcal-head .month{font-size:14px}
  .gcal-head .navs button{padding:4px 8px;font-size:11px}
  .gcal-cell{min-height:48px;padding:3px;font-size:8px}
@@ -447,6 +456,8 @@ details[open] summary{margin-bottom:10px}
  .gcal-evt{font-size:7px;padding:1px 2px}
  .gcal-legend{font-size:9px;gap:8px}
  .gcal-dow{padding:4px 2px;font-size:9px}
+ /* Wrap gcal in scrollable container */
+ #gcal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -10px;padding:0 10px}
 
  /* Tabs */
  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
