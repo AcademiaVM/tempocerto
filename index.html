@@ -133,6 +133,26 @@ tr:hover td{background:rgba(63,59,255,.05)}
 .memo{background:#08081A;border:1px solid var(--line);border-radius:8px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;max-height:420px;overflow-y:auto;white-space:pre-wrap;color:#B8B8E0;line-height:1.75}
 details summary{cursor:pointer;padding:10px 14px;background:var(--bg3);border-radius:8px;font-weight:700;font-size:13px;user-select:none}
 details[open] summary{margin-bottom:10px}
+/* HOME */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px}
+.scn-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative}
+.scn-card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.scn-card.new{background:linear-gradient(160deg,rgba(63,59,255,.18),rgba(96,24,186,.06));border:2px dashed rgba(63,59,255,.4);display:flex;align-items:center;justify-content:center;min-height:140px;text-align:center;flex-direction:column;gap:8px}
+.scn-card.new .plus{font-size:32px;font-weight:300;color:var(--purple)}
+.scn-card .nm{font-weight:800;font-size:16px;margin-bottom:6px}
+.scn-card .meta{font-size:12px;color:var(--mut);margin-bottom:10px}
+.scn-card .tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.scn-card .tags .tg{padding:2px 8px;border-radius:999px;background:var(--bg3);font-size:10px;font-weight:600;color:var(--mut)}
+.scn-card .acts{display:flex;gap:6px}
+.scn-card .acts button{background:var(--bg3);color:var(--txt);padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid var(--line)}
+.scn-card .acts button:hover{background:var(--bg4)}
+.scn-card .acts button.del:hover{background:rgba(239,68,68,.15);border-color:var(--err);color:#FCA5A5}
+.scn-card .badge{position:absolute;top:10px;right:10px;font-size:10px;padding:2px 8px;border-radius:999px;background:var(--gold);color:#000;font-weight:800}
+.home-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap}
+.home-bar .acts{display:flex;gap:8px}
+.scn-name-bar{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);padding:8px 14px;border-radius:10px;margin-bottom:18px}
+.scn-name-bar .nm{font-weight:700;flex:1}
+.scn-name-bar .st{font-size:11px;color:var(--mut)}
 </style></head>
 <body>
 <header>
@@ -141,15 +161,29 @@ details[open] summary{margin-bottom:10px}
     <h1>TempoCerto <span>v3 · Simulador HGPE</span></h1>
   </div>
   <div class="stepper">
-    <div class="step on" data-step="1" onclick="goStep(1)"><div class="n">1</div><div class="t">Configurar<small>UF, cargos e bancada</small></div></div>
+    <div class="step on" data-step="0" onclick="goStep(0)"><div class="n">⌂</div><div class="t">Cenários<small>salvos e templates</small></div></div>
+    <div class="step" data-step="1" onclick="goStep(1)"><div class="n">1</div><div class="t">Configurar<small>UF, cargos e bancada</small></div></div>
     <div class="step" data-step="2" onclick="goStep(2)"><div class="n">2</div><div class="t">Montar chapas<small>partidos e federações</small></div></div>
     <div class="step" data-step="3" onclick="goStep(3)"><div class="n">3</div><div class="t">Resultado<small>blocos, inserções e memorial</small></div></div>
   </div>
 </header>
 
 <main>
+<!-- STEP 0 — HOME -->
+<div class="screen on" id="sc0">
+  <div class="home-bar">
+    <div><h2 class="title">Cenários</h2><p class="lead" style="margin-bottom:0">Crie, salve e organize simulações. Cada cenário guarda UF, cargos, chapas e bancada.</p></div>
+    <div class="acts">
+      <button class="btn ghost sm" onclick="document.getElementById('fImp').click()">📥 Importar JSON</button>
+      <input type="file" id="fImp" accept=".json" style="display:none" onchange="impFile(event)">
+    </div>
+  </div>
+  <div class="home-grid" id="homeGrid"></div>
+</div>
+
 <!-- STEP 1 -->
-<div class="screen on" id="sc1">
+<div class="screen" id="sc1">
+  <div class="scn-name-bar"><span style="font-size:18px">📄</span><div class="nm" id="scName1">Cenário sem nome</div><div class="st" id="scStat1">Não salvo</div><button class="btn sm" onclick="openSave()">💾 Salvar</button></div>
   <h2 class="title">Configurar simulação</h2>
   <p class="lead">Escolha a circunscrição, os cargos e confira a bancada. O simulador adota a regra do art. 47, §2º da Lei 9.504/97 — 1/3 igualitário + 2/3 proporcional à bancada da Câmara do início da legislatura em curso.</p>
   <div class="card">
@@ -204,6 +238,24 @@ details[open] summary{margin-bottom:10px}
   </div>
 </div>
 </main>
+
+<!-- MODAL SALVAR -->
+<div class="modal" id="mSave"><div class="modal-box" style="max-width:520px">
+  <div class="modal-h"><h3>Salvar cenário</h3><button class="btn ghost sm" onclick="document.getElementById('mSave').classList.remove('on')">✕</button></div>
+  <div class="modal-body">
+    <label>Nome do cenário</label>
+    <input type="text" id="sName" placeholder="Ex: SP 2026 — cenário base">
+    <div style="margin-top:16px"><label>Escopo do cenário</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <label class="part" style="cursor:pointer;background:var(--bg3);padding:12px"><input type="radio" name="esc" value="completo" checked> <span style="margin-left:6px"><b>UF completa</b> — guarda todos os cargos ativos</span></label>
+        <label class="part" style="cursor:pointer;background:var(--bg3);padding:12px"><input type="radio" name="esc" value="cargo"> <span style="margin-left:6px"><b>UF + 1 cargo específico</b> — escolha qual:</span></label>
+        <select id="sCargo" disabled style="margin-left:24px;width:calc(100% - 24px)"><option value="presidente">Presidente</option><option value="governador">Governador</option><option value="senador">Senador</option><option value="depfed">Dep. Federal</option><option value="depest">Dep. Estadual</option></select>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:14px">💡 Cenários por cargo são úteis para comparar configurações de uma mesma disputa (ex.: 3 cenários de governador em SP).</div>
+  </div>
+  <div class="modal-f"><button class="btn ghost" onclick="document.getElementById('mSave').classList.remove('on')">Cancelar</button><button class="btn" onclick="doSave()">Salvar</button></div>
+</div></div>
 
 <!-- MODAL BANCADA -->
 <div class="modal" id="mBench"><div class="modal-box">
@@ -268,6 +320,7 @@ function renderBench(){
 
 /* NAVEGAÇÃO ENTRE PASSOS */
 function goStep(n){
+ if(n===0){renderHome();}
  if(n===2){
   const ativos=Object.keys(CARGOS).filter(k=>state.ativos[k]);
   if(ativos.length===0){alert("Ative ao menos um cargo.");return;}
@@ -277,7 +330,7 @@ function goStep(n){
  if(n===3)simular();
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
  document.getElementById('sc'+n).classList.add('on');
- document.querySelectorAll('.step').forEach(s=>{const sn=+s.dataset.step;s.classList.toggle('on',sn===n);s.classList.toggle('done',sn<n);});
+ document.querySelectorAll('.step').forEach(s=>{const sn=+s.dataset.step;s.classList.toggle('on',sn===n);s.classList.toggle('done',sn>0&&sn<n);});
  window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -426,6 +479,88 @@ function simular(){
 }
 function tabGo(i){document.querySelectorAll('.tabs .tab').forEach((t,ix)=>t.classList.toggle('on',ix===i));document.querySelectorAll('.tabpane').forEach((t,ix)=>t.classList.toggle('on',ix===i));}
 
+/* ========== CENÁRIOS / PERSISTÊNCIA ========== */
+const STORE_KEY='avm_tempocerto_v4';
+let activeScn={id:null,nome:'Cenário sem nome',escopo:'completo',cargo:null,saved:false};
+
+const TEMPLATES=[
+ {id:'tpl-sp-2026',nome:'SP 2026 — cenário base',template:true,escopo:'completo',cargo:null,
+  data:{uf:'SP',ano:'2022',ativos:{presidente:true,governador:true,senador:true,depfed:true,depest:true},
+   bancada:Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b])),
+   chapas:{presidente:[{id:1,partidos:['PT','PCdoB','PV','PSB','PSOL','REDE'],federacoes:['FE BRASIL','PSOL/REDE']},{id:2,partidos:['PL','PP','REPUBLICANOS'],federacoes:[]}],
+    governador:[{id:1,partidos:['PSD'],federacoes:[]},{id:2,partidos:['PT'],federacoes:[]},{id:3,partidos:['PL'],federacoes:[]}],
+    senador:[{id:1,partidos:['PT'],federacoes:[]},{id:2,partidos:['PL'],federacoes:[]}],
+    depfed:[{id:1,partidos:['PT'],federacoes:[]},{id:2,partidos:['PL'],federacoes:[]},{id:3,partidos:['MDB'],federacoes:[]}],
+    depest:[{id:1,partidos:['PT'],federacoes:[]},{id:2,partidos:['PL'],federacoes:[]}]}}},
+ {id:'tpl-presid-2026',nome:'Presidência 2026 — 4 chapas',template:true,escopo:'cargo',cargo:'presidente',
+  data:{uf:'DF',ano:'2022',ativos:{presidente:true,governador:false,senador:false,depfed:false,depest:false},
+   bancada:Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b])),
+   chapas:{presidente:[
+    {id:1,partidos:['PT','PCdoB','PV','PSB'],federacoes:['FE BRASIL']},
+    {id:2,partidos:['PL','PP','REPUBLICANOS'],federacoes:[]},
+    {id:3,partidos:['UNIÃO','PSDB','CIDADANIA'],federacoes:['PSDB/CIDADANIA']},
+    {id:4,partidos:['NOVO'],federacoes:[]}],
+    governador:[],senador:[],depfed:[],depest:[]}}}
+];
+
+function loadStore(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||[]}catch(e){return[]}}
+function saveStore(arr){localStorage.setItem(STORE_KEY,JSON.stringify(arr))}
+function snapshot(){return JSON.parse(JSON.stringify({uf:state.uf,ano:state.ano,ativos:state.ativos,bancada:state.bancada,chapas:state.chapas}))}
+function applySnapshot(d){state.uf=d.uf;state.ano=d.ano;state.ativos={...d.ativos};state.bancada={...d.bancada};state.chapas=JSON.parse(JSON.stringify(d.chapas));
+ document.getElementById('uf').value=state.uf;document.getElementById('ano').value=state.ano;
+ document.querySelectorAll('.cargo-card').forEach(c=>c.classList.toggle('on',state.ativos[c.dataset.k]));updBT();}
+function updateScnUI(){document.getElementById('scName1').textContent=activeScn.nome;document.getElementById('scStat1').textContent=activeScn.saved?'✓ Salvo':'• Modificado';}
+
+function renderHome(){
+ const grid=document.getElementById('homeGrid');grid.innerHTML='';
+ const newC=document.createElement('div');newC.className='scn-card new';newC.innerHTML=`<div class="plus">+</div><div style="font-weight:700">Novo cenário em branco</div><div style="font-size:11px;color:var(--mut)">Configurar do zero</div>`;
+ newC.onclick=()=>{newScenario();goStep(1);};grid.appendChild(newC);
+ const all=[...TEMPLATES,...loadStore()];
+ all.forEach(s=>{
+  const c=document.createElement('div');c.className='scn-card';
+  const cargosTxt=s.escopo==='cargo'?CARGOS[s.cargo].nm:Object.keys(s.data.ativos).filter(k=>s.data.ativos[k]).map(k=>CARGOS[k].nm).join(', ');
+  c.innerHTML=`${s.template?'<span class="badge">TEMPLATE</span>':''}<div class="nm">${s.nome}</div><div class="meta">${s.data.uf} · ${s.escopo==='cargo'?'1 cargo':Object.values(s.data.ativos).filter(Boolean).length+' cargos'}</div>
+   <div class="tags"><span class="tg">${s.data.uf}</span><span class="tg">bancada ${s.data.ano}</span>${s.template?'<span class="tg" style="color:#FACC15">exemplo</span>':''}</div>
+   <div class="acts"><button onclick="event.stopPropagation();loadScn('${s.id}')">Abrir</button><button onclick="event.stopPropagation();dupScn('${s.id}')">Duplicar</button>${!s.template?`<button onclick="event.stopPropagation();expScn('${s.id}')">Exportar</button><button class="del" onclick="event.stopPropagation();delScn('${s.id}')">Excluir</button>`:''}</div>`;
+  c.onclick=()=>loadScn(s.id);
+  grid.appendChild(c);
+ });
+}
+function newScenario(){activeScn={id:null,nome:'Cenário sem nome',escopo:'completo',cargo:null,saved:false};
+ state.uf='SP';state.ano='2022';state.ativos={presidente:true,governador:true,senador:true,depfed:true,depest:true};
+ state.bancada=Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));state.chapas={presidente:[],governador:[],senador:[],depfed:[],depest:[]};
+ document.getElementById('uf').value='SP';document.getElementById('ano').value='2022';
+ document.querySelectorAll('.cargo-card').forEach(c=>c.classList.add('on'));updBT();updateScnUI();}
+function findScn(id){return TEMPLATES.find(s=>s.id===id)||loadStore().find(s=>s.id===id);}
+function loadScn(id){const s=findScn(id);if(!s)return;applySnapshot(s.data);activeScn={id:s.template?null:s.id,nome:s.template?s.nome+' (cópia)':s.nome,escopo:s.escopo,cargo:s.cargo,saved:!s.template};updateScnUI();goStep(1);}
+function dupScn(id){const s=findScn(id);if(!s)return;const arr=loadStore();const novo={...JSON.parse(JSON.stringify(s)),id:'scn-'+Date.now(),nome:s.nome+' (cópia)',template:false};arr.push(novo);saveStore(arr);renderHome();}
+function delScn(id){if(!confirm('Excluir este cenário?'))return;saveStore(loadStore().filter(s=>s.id!==id));renderHome();}
+function expScn(id){const s=findScn(id);if(!s)return;const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=s.nome.replace(/\s+/g,'_')+'.json';a.click();}
+function impFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const s=JSON.parse(r.result);s.id='scn-'+Date.now();s.template=false;const arr=loadStore();arr.push(s);saveStore(arr);renderHome();alert('Importado: '+s.nome);}catch(err){alert('Arquivo inválido')}};r.readAsText(f);}
+function openSave(){document.getElementById('sName').value=activeScn.nome==='Cenário sem nome'?'':activeScn.nome;document.querySelectorAll('input[name=esc]').forEach(r=>r.checked=(r.value===activeScn.escopo));document.getElementById('sCargo').disabled=(activeScn.escopo!=='cargo');if(activeScn.cargo)document.getElementById('sCargo').value=activeScn.cargo;document.getElementById('mSave').classList.add('on');}
+function doSave(){
+ const nome=document.getElementById('sName').value.trim();if(!nome){alert('Dê um nome ao cenário');return;}
+ const escopo=document.querySelector('input[name=esc]:checked').value;const cargo=escopo==='cargo'?document.getElementById('sCargo').value:null;
+ const arr=loadStore();
+ if(activeScn.id){const i=arr.findIndex(s=>s.id===activeScn.id);if(i>=0){arr[i]={...arr[i],nome,escopo,cargo,data:snapshot()};}}
+ else{const novo={id:'scn-'+Date.now(),nome,escopo,cargo,template:false,data:snapshot()};arr.push(novo);activeScn.id=novo.id;}
+ activeScn.nome=nome;activeScn.escopo=escopo;activeScn.cargo=cargo;activeScn.saved=true;
+ saveStore(arr);updateScnUI();document.getElementById('mSave').classList.remove('on');
+}
+document.addEventListener('change',e=>{if(e.target.name==='esc')document.getElementById('sCargo').disabled=(e.target.value!=='cargo');});
+
+/* Marca como modificado em qualquer mudança */
+const origToggle=goStep;
+function markDirty(){if(activeScn.saved){activeScn.saved=false;updateScnUI();}}
+
 /* BOOT */
-initUF();initCargos();updBT();
+initUF();initCargos();updBT();renderHome();updateScnUI();
+// Detecta mudanças
+['uf','ano'].forEach(id=>document.getElementById(id).addEventListener('change',markDirty));
+document.getElementById('cargos').addEventListener('click',markDirty);
+const _addChapa=addChapa,_remChapa=remChapa,_togFed=togFed,_togPart=togPart;
+addChapa=function(){_addChapa();markDirty();};
+remChapa=function(i){_remChapa(i);markDirty();};
+togFed=function(i,fn){_togFed(i,fn);markDirty();};
+togPart=function(i,s){_togPart(i,s);markDirty();};
 </script></body></html>
