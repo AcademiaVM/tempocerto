@@ -1223,8 +1223,8 @@ function renderHome(){
   const dateStr=s.updatedAt?new Date(s.updatedAt.seconds?s.updatedAt.seconds*1000:s.updatedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
   c.innerHTML=`${s.template?'<span class="badge">TEMPLATE</span>':''}<div class="nm">${escapeHTML(s.nome)}</div><div class="meta">${s.data.uf} · ${s.escopo==='cargo'?'1 cargo':Object.values(s.data.ativos).filter(Boolean).length+' cargos'}${dateStr?' · '+dateStr:''}</div>
    <div class="tags"><span class="tg">${s.data.uf}</span><span class="tg">bancada ${s.data.ano}</span>${s.template?'<span class="tg" style="color:#FACC15">exemplo</span>':''}</div>
-   <div class="acts"><button onclick="event.stopPropagation();loadScn('${s.id}')">Abrir</button><button onclick="event.stopPropagation();dupScn('${s.id}')">Duplicar</button>${!s.template?`<button onclick="event.stopPropagation();expScn('${s.id}')">Exportar</button><button class="del" onclick="event.stopPropagation();delScn('${s.id}')">Excluir</button>`:''}</div>`;
-  c.onclick=()=>loadScn(s.id);grid.appendChild(c);
+   <div class="acts"><button onclick="event.stopPropagation();loadScn('${s.id}',1)">Editar</button><button onclick="event.stopPropagation();loadScn('${s.id}',3)">Resultado</button><button onclick="event.stopPropagation();dupScn('${s.id}')">Duplicar</button>${!s.template?`<button onclick="event.stopPropagation();expScn('${s.id}')">Exportar</button><button class="del" onclick="event.stopPropagation();delScn('${s.id}')">Excluir</button>`:''}</div>`;
+  c.onclick=()=>loadScn(s.id,3);grid.appendChild(c);
  });
 }
 function newScenario(){activeScn={id:null,nome:'Cenário sem nome',escopo:'completo',cargo:null,saved:false};isDirty=false;
@@ -1233,7 +1233,7 @@ function newScenario(){activeScn={id:null,nome:'Cenário sem nome',escopo:'compl
  document.getElementById('uf').value='SP';document.getElementById('ano').value='2022';
  document.querySelectorAll('.cargo-card').forEach(c=>c.classList.add('on'));updBT();updateScnUI();}
 function findScn(id){return TEMPLATES.find(s=>s.id===id)||loadStore().find(s=>s.id===id);}
-function loadScn(id){const s=findScn(id);if(!s)return;applySnapshot(s.data);activeScn={id:s.template?null:s.id,nome:s.template?s.nome+' (cópia)':s.nome,escopo:s.escopo,cargo:s.cargo,saved:!s.template};isDirty=false;updateScnUI();goStep(1);}
+function loadScn(id,goTo){const s=findScn(id);if(!s)return;applySnapshot(s.data);activeScn={id:s.template?null:s.id,nome:s.template?s.nome+' (cópia)':s.nome,escopo:s.escopo,cargo:s.cargo,saved:!s.template};isDirty=false;updateScnUI();goStep(goTo||1);}
 function dupScn(id){const s=findScn(id);if(!s)return;const novo={...JSON.parse(JSON.stringify(s)),id:'scn-'+Date.now(),nome:s.nome+' (cópia)',template:false,updatedAt:new Date().toISOString()};const arr=loadStore();arr.push(novo);saveStore(arr);saveScenarioToFirestore(novo);renderHome();}
 async function delScn(id){if(!confirm('Excluir este cenário?'))return;saveStore(loadStore().filter(s=>s.id!==id));await deleteScenarioFromFirestore(id);renderHome();showToast('Cenário excluído');}
 function expScn(id){const s=findScn(id);if(!s)return;const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.nome||'cenario').replace(/\s+/g,'_')+'.json';a.click();}
