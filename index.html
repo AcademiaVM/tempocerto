@@ -239,6 +239,15 @@ details[open] summary{margin-bottom:10px}
 </div>
 </main>
 
+<!-- MODAL COPIAR/ESPELHAR -->
+<div class="modal" id="mCopy"><div class="modal-box" style="max-width:560px">
+  <div class="modal-h"><h3 id="cpTitle">Copiar chapa para outro cargo</h3><button class="btn ghost sm" onclick="document.getElementById('mCopy').classList.remove('on')">✕</button></div>
+  <div class="modal-body">
+    <div id="cpContent"></div>
+  </div>
+  <div class="modal-f"><button class="btn ghost" onclick="document.getElementById('mCopy').classList.remove('on')">Cancelar</button><button class="btn" onclick="doCopy()" id="cpBtn">Copiar</button></div>
+</div></div>
+
 <!-- MODAL SALVAR -->
 <div class="modal" id="mSave"><div class="modal-box" style="max-width:520px">
   <div class="modal-h"><h3>Salvar cenário</h3><button class="btn ghost sm" onclick="document.getElementById('mSave').classList.remove('on')">✕</button></div>
@@ -352,7 +361,7 @@ function renderCanvas(){
  const c=document.getElementById('canvas');
  const chs=state.chapas[k];
  let html=`<div class="canvas-head"><div><h3>${v.ic} ${v.nm}</h3><div class="meta">${v.mt}</div></div>
-  <button class="btn sm" onclick="addChapa()">+ Nova chapa</button></div>`;
+  <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="openMirror()" title="Copiar todas as chapas de outro cargo">⇄ Espelhar de...</button><button class="btn sm" onclick="addChapa()">+ Nova chapa</button></div></div>`;
  if(v.semcol)html+=`<div class="hint warn">⚠ Coligação vedada desde a EC 97/2017. Cada chapa aqui é <b>um partido isolado</b> ou <b>uma federação</b>.</div>`;
  if(chs.length===0)html+=`<div class="hint">Nenhuma chapa ainda. Clique em "+ Nova chapa" para começar.</div>`;
  chs.forEach((ch,i)=>html+=renderChapa(k,ch,i));
@@ -365,7 +374,7 @@ function renderChapa(k,ch,idx){
  const usados=new Set();state.chapas[k].forEach((c,ci)=>{if(ci!==idx)c.partidos.forEach(p=>usados.add(p));});
  const fedParts=ch.federacoes.flatMap(f=>FED[f]);
  let h=`<div class="chapa"><div class="chapa-h"><div class="tt">Chapa ${idx+1} <span class="tag">${ch.partidos.length} partido(s)</span>${ch.federacoes.length?' <span class="tag warn">federada</span>':''}</div>
-  <button class="btn danger sm" onclick="remChapa(${idx})">remover</button></div>`;
+  <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="openCopy(${idx})" title="Copiar esta chapa para outro cargo">📋 Copiar para...</button><button class="btn danger sm" onclick="remChapa(${idx})">remover</button></div></div>`;
  h+=`<label>Federação (opcional — entra como bloco único)</label><div class="fed-list">`;
  Object.keys(FED).forEach(fn=>{
   const on=ch.federacoes.includes(fn);
@@ -478,6 +487,90 @@ function simular(){
  document.getElementById('memo').textContent=memo;
 }
 function tabGo(i){document.querySelectorAll('.tabs .tab').forEach((t,ix)=>t.classList.toggle('on',ix===i));document.querySelectorAll('.tabpane').forEach((t,ix)=>t.classList.toggle('on',ix===i));}
+
+/* ========== COPIAR / ESPELHAR CHAPAS ========== */
+let copyCtx={modo:null,chapaIdx:null};
+
+function openCopy(idx){
+ copyCtx={modo:'chapa',chapaIdx:idx};
+ const ch=state.chapas[state.cargoAtual][idx];
+ const cargoOrigem=state.cargoAtual;
+ document.getElementById('cpTitle').textContent=`Copiar Chapa ${idx+1} de ${CARGOS[cargoOrigem].nm} para...`;
+ const ativos=Object.keys(CARGOS).filter(k=>state.ativos[k] && k!==cargoOrigem);
+ if(ativos.length===0){alert('Ative outro cargo no passo 1 para poder copiar.');return;}
+ let html=`<div class="hint">Esta chapa tem: <b>${ch.partidos.join(', ')||'(vazia)'}</b>${ch.federacoes.length?' · federações: '+ch.federacoes.join(', '):''}</div>`;
+ html+=`<label>Cargo de destino</label><div style="display:flex;flex-direction:column;gap:8px">`;
+ ativos.forEach((k,i)=>{
+  const v=CARGOS[k];const semcol=v.semcol;
+  const aviso=semcol&&ch.partidos.length>1&&ch.federacoes.length===0?'<br><span style="color:#FCA5A5;font-size:11px">⚠ Coligação será desmembrada em chapas individuais (cargo sem coligação)</span>':'';
+  html+=`<label class="part" style="cursor:pointer;background:var(--bg3);padding:12px"><input type="radio" name="cpDest" value="${k}" ${i===0?'checked':''}> <span style="margin-left:6px"><b>${v.ic} ${v.nm}</b> <span class="tag">${state.chapas[k].length} chapa(s) já configurada(s)</span>${aviso}</span></label>`;
+ });
+ html+=`</div><div style="margin-top:14px"><label>Modo de cópia</label>
+  <label class="part" style="cursor:pointer;background:var(--bg3);padding:10px;display:block"><input type="radio" name="cpMode" value="add" checked> <span style="margin-left:6px">Adicionar como nova chapa no destino</span></label>
+  <label class="part" style="cursor:pointer;background:var(--bg3);padding:10px;display:block;margin-top:6px"><input type="radio" name="cpMode" value="replace"> <span style="margin-left:6px">Substituir todas as chapas do destino</span></label></div>`;
+ document.getElementById('cpContent').innerHTML=html;
+ document.getElementById('cpBtn').textContent='Copiar chapa';
+ document.getElementById('mCopy').classList.add('on');
+}
+
+function openMirror(){
+ copyCtx={modo:'espelhar',chapaIdx:null};
+ const cargoDest=state.cargoAtual;
+ document.getElementById('cpTitle').textContent=`Espelhar todas as chapas em ${CARGOS[cargoDest].nm}`;
+ const origens=Object.keys(CARGOS).filter(k=>state.ativos[k] && k!==cargoDest && state.chapas[k].length>0);
+ if(origens.length===0){alert('Nenhum outro cargo tem chapas configuradas para espelhar.');return;}
+ let html=`<div class="hint">Útil quando a coligação majoritária se repete (ex.: governador → senador). As chapas atuais de ${CARGOS[cargoDest].nm} serão substituídas.</div>`;
+ html+=`<label>Copiar chapas de qual cargo?</label><div style="display:flex;flex-direction:column;gap:8px">`;
+ origens.forEach((k,i)=>{
+  const v=CARGOS[k];const n=state.chapas[k].length;const destSemcol=CARGOS[cargoDest].semcol;
+  const temColig=state.chapas[k].some(c=>c.partidos.length>1 && c.federacoes.length===0);
+  const aviso=destSemcol&&temColig?'<br><span style="color:#FCA5A5;font-size:11px">⚠ Coligações serão desmembradas (destino não admite coligação)</span>':'';
+  html+=`<label class="part" style="cursor:pointer;background:var(--bg3);padding:12px"><input type="radio" name="mirSrc" value="${k}" ${i===0?'checked':''}> <span style="margin-left:6px"><b>${v.ic} ${v.nm}</b> <span class="tag">${n} chapa(s)</span>${aviso}</span></label>`;
+ });
+ html+=`</div>`;
+ document.getElementById('cpContent').innerHTML=html;
+ document.getElementById('cpBtn').textContent='Espelhar';
+ document.getElementById('mCopy').classList.add('on');
+}
+
+function doCopy(){
+ if(copyCtx.modo==='chapa'){
+  const dest=document.querySelector('input[name=cpDest]:checked').value;
+  const mode=document.querySelector('input[name=cpMode]:checked').value;
+  const ch=state.chapas[state.cargoAtual][copyCtx.chapaIdx];
+  const novas=adaptChapa(ch,dest);
+  if(mode==='replace')state.chapas[dest]=novas;
+  else state.chapas[dest].push(...novas);
+ }else if(copyCtx.modo==='espelhar'){
+  const src=document.querySelector('input[name=mirSrc]:checked').value;
+  const dest=state.cargoAtual;
+  const novas=[];
+  state.chapas[src].forEach(ch=>novas.push(...adaptChapa(ch,dest)));
+  state.chapas[dest]=novas;
+ }
+ document.getElementById('mCopy').classList.remove('on');
+ markDirty();renderNav();renderCanvas();
+}
+
+/* Adapta chapa para cargo destino: se destino é proporcional sem coligação, desmembra coligações em chapas individuais (mantém federações como bloco) */
+function adaptChapa(ch,destCargo){
+ const destSemcol=CARGOS[destCargo].semcol;
+ const novaBase=()=>({id:Date.now()+Math.random(),partidos:[],federacoes:[]});
+ if(!destSemcol){
+  return [{id:Date.now()+Math.random(),partidos:[...ch.partidos],federacoes:[...ch.federacoes]}];
+ }
+ // Destino sem coligação: federações viram chapas próprias; partidos isolados viram chapas próprias
+ const out=[];
+ const fedParts=ch.federacoes.flatMap(f=>FED[f]);
+ ch.federacoes.forEach(fn=>{
+  const pts=FED[fn].filter(p=>ch.partidos.includes(p));
+  if(pts.length>0)out.push({id:Date.now()+Math.random()+Math.random(),partidos:pts,federacoes:[fn]});
+ });
+ ch.partidos.filter(p=>!fedParts.includes(p)).forEach(p=>{
+  out.push({id:Date.now()+Math.random()+Math.random(),partidos:[p],federacoes:[]});
+ });
+ return out;
+}
 
 /* ========== CENÁRIOS / PERSISTÊNCIA ========== */
 const STORE_KEY='avm_tempocerto_v4';
