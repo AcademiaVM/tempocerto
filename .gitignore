@@ -1,0 +1,21 @@
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (caso adicione build no futuro)
+node_modules/
+package-lock.json
+dist/
+build/
+
+# Backups
+*.bak
+*.orig
