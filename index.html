@@ -1317,7 +1317,23 @@ const TEMPLATES=[
 ];
 
 function snapshot(){return JSON.parse(JSON.stringify({uf:state.uf,ano:state.ano,ativos:state.ativos,bancada:state.bancada,chapas:state.chapas,meuCandidato:state.meuCandidato}));}
-function applySnapshot(d){state.uf=d.uf;state.ano=d.ano;state.ativos={...d.ativos};state.bancada={...d.bancada};state.chapas=JSON.parse(JSON.stringify(d.chapas));state.meuCandidato=d.meuCandidato?{...d.meuCandidato}:{depfed:null,depest:null};
+function migrateSnapshot(d){
+ // Atualiza bancada para lista de partidos atual
+ const currentSiglas=new Set(PARTIDOS.map(p=>p.s));
+ const newBancada=Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
+ // Se o cenário tem partidos que não existem mais, redistribui para PRD
+ const extintos=['PSC','PTB','PATRIOTA','PROS','PMN','PMB'];
+ d.bancada=newBancada;
+ // Remove partidos extintos das chapas
+ Object.keys(d.chapas||{}).forEach(k=>{
+  if(!Array.isArray(d.chapas[k]))return;
+  d.chapas[k].forEach(ch=>{
+   ch.partidos=(ch.partidos||[]).filter(p=>currentSiglas.has(p));
+  });
+ });
+ return d;
+}
+function applySnapshot(d){d=migrateSnapshot(d);state.uf=d.uf;state.ano=d.ano;state.ativos={...d.ativos};state.bancada={...d.bancada};state.chapas=JSON.parse(JSON.stringify(d.chapas));state.meuCandidato=d.meuCandidato?{...d.meuCandidato}:{depfed:null,depest:null};
  document.getElementById('uf').value=state.uf;document.getElementById('ano').value=state.ano;
  document.querySelectorAll('.cargo-card').forEach(c=>c.classList.toggle('on',state.ativos[c.dataset.k]));updBT();}
 function updateScnUI(){document.getElementById('scNameInput').value=activeScn.nome;document.getElementById('scStat1').textContent=activeScn.saved?'✓ Salvo':'• Modificado';}
@@ -1389,6 +1405,7 @@ function gerarInsights(k,r){
 
 /* ========== COMPARAR CENÁRIOS ========== */
 function calcCargoFrom(k,data){
+ data=migrateSnapshot(JSON.parse(JSON.stringify(data)));
  const cfg=CARGOS[k];if(!data.ativos[k])return null;
  const bancada=data.bancada,meu=data.meuCandidato?data.meuCandidato[k]:null;
  const unidades=data.chapas[k].map((c,i)=>{
