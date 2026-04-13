@@ -915,6 +915,7 @@ function doSave(){
  else{const novo={id:'scn-'+Date.now(),nome,escopo,cargo,template:false,data:snapshot()};arr.push(novo);activeScn.id=novo.id;}
  activeScn.nome=nome;activeScn.escopo=escopo;activeScn.cargo=cargo;activeScn.saved=true;
  saveStore(arr);updateScnUI();document.getElementById('mSave').classList.remove('on');
+ goStep(0);
 }
 document.addEventListener('change',e=>{if(e.target.name==='esc')document.getElementById('sCargo').disabled=(e.target.value!=='cargo');});
 
