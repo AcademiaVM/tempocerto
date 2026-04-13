@@ -1,459 +1,431 @@
 <!doctype html>
-<html lang="pt-br">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AVM TempoCerto v2 — Simulador HGPE</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AVM TempoCerto v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0B0B14; --bg2:#141427; --bg3:#1C1C34; --line:#2A2A4A;
-    --purple:#3F3BFF; --deep:#6018BA; --txt:#EAEAF5; --mut:#9A9ABF;
-    --ok:#22C55E; --warn:#F59E0B; --err:#EF4444; --gold:#FACC15;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,var(--bg) 0%,#0F0F22 100%);color:var(--txt);font-family:'Barlow',system-ui,sans-serif;font-weight:400;line-height:1.5;min-height:100vh}
-  header{padding:28px 32px;border-bottom:1px solid var(--line);background:rgba(20,20,39,.6);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
-  header h1{margin:0;font-weight:800;font-size:22px;letter-spacing:-.01em}
-  header h1 span{background:linear-gradient(90deg,var(--purple),var(--deep));-webkit-background-clip:text;background-clip:text;color:transparent}
-  header p{margin:4px 0 0;color:var(--mut);font-size:13px}
-  main{max-width:1400px;margin:0 auto;padding:24px 32px 80px}
-  .card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px}
-  .card h2{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
-  .card h2::before{content:"";display:inline-block;width:4px;height:14px;background:var(--purple);margin-right:10px;vertical-align:middle;border-radius:2px}
-  .card .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
-  label{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-weight:600}
-  select,input[type=number],input[type=text]{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;width:100%}
-  select:focus,input:focus{outline:none;border-color:var(--purple)}
-  button{background:linear-gradient(90deg,var(--purple),var(--deep));color:#fff;border:0;padding:12px 20px;border-radius:10px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.03em;text-transform:uppercase}
-  button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
-  button.sm{padding:6px 12px;font-size:12px}
-  button:hover{filter:brightness(1.1)}
-  .grid{display:grid;gap:16px}
-  .grid-2{grid-template-columns:1fr 1fr}
-  .grid-3{grid-template-columns:repeat(3,1fr)}
-  .grid-5{grid-template-columns:repeat(5,1fr)}
-  @media(max-width:900px){.grid-2,.grid-3,.grid-5{grid-template-columns:1fr}}
-  .cargo-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-  .cargo-tab{padding:10px 14px;border-radius:10px;background:var(--bg3);border:1px solid var(--line);cursor:pointer;font-size:13px;font-weight:600;user-select:none}
-  .cargo-tab.on{background:linear-gradient(90deg,var(--purple),var(--deep));border-color:transparent}
-  .cargo-tab .chk{display:inline-block;width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;vertical-align:middle;margin-right:6px;position:relative}
-  .cargo-tab.on .chk::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
-  .chapa{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--bg3)}
-  .chapa-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
-  .chapa-title{font-weight:700;font-size:15px}
-  .partidos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;max-height:280px;overflow-y:auto;padding:8px;background:var(--bg2);border-radius:8px;border:1px solid var(--line)}
-  .part-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}
-  .part-item:hover{background:var(--bg3)}
-  .part-item input[type=checkbox]{accent-color:var(--purple)}
-  .part-item .bench{color:var(--mut);font-size:11px;margin-left:auto}
-  .part-item.fed-badge::after{content:"FED";background:var(--gold);color:#000;padding:1px 4px;border-radius:3px;font-size:9px;font-weight:800;margin-left:4px}
-  .warn-box{background:rgba(245,158,11,.1);border:1px solid var(--warn);color:#FCD34D;padding:10px 14px;border-radius:8px;font-size:13px;margin:8px 0}
-  .err-box{background:rgba(239,68,68,.1);border:1px solid var(--err);color:#FCA5A5;padding:10px 14px;border-radius:8px;font-size:13px;margin:8px 0}
-  .ok-box{background:rgba(34,197,94,.1);border:1px solid var(--ok);color:#86EFAC;padding:10px 14px;border-radius:8px;font-size:13px;margin:8px 0}
-  .bench-editor{max-height:380px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg3)}
-  .bench-row{display:grid;grid-template-columns:40px 1fr 80px;gap:8px;align-items:center;padding:4px 6px;font-size:13px}
-  .bench-row input{padding:4px 8px;font-size:13px}
-  .bench-row .sigla{font-weight:700}
-  .bench-row .nome{color:var(--mut);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* Resultado */
-  .result-cargo{border:1px solid var(--line);border-radius:14px;margin-bottom:20px;overflow:hidden}
-  .result-head{background:linear-gradient(90deg,rgba(63,59,255,.25),rgba(96,24,186,.15));padding:16px 20px;border-bottom:1px solid var(--line)}
-  .result-head h3{margin:0;font-size:17px;font-weight:800;letter-spacing:.02em}
-  .result-head .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--purple);font-size:11px;font-weight:700;margin-left:8px;letter-spacing:.05em}
-  .result-body{padding:16px 20px}
-  .bar{height:22px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative;margin:4px 0}
-  .bar>div{height:100%;background:linear-gradient(90deg,var(--purple),var(--deep));display:flex;align-items:center;padding-left:8px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
-  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
-  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
-  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
-  tr:hover td{background:rgba(63,59,255,.05)}
-  .num{font-variant-numeric:tabular-nums;text-align:right}
-  /* Calendário */
-  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
-  .cal-day{background:var(--bg3);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:72px;font-size:11px}
-  .cal-day .d{font-weight:700;font-size:13px;margin-bottom:4px}
-  .cal-tag{display:block;padding:2px 4px;margin-top:2px;border-radius:3px;font-size:10px;font-weight:600}
-  .cal-tag.tts{background:rgba(63,59,255,.3);color:#C7C4FF}
-  .cal-tag.mqs{background:rgba(250,204,21,.2);color:#FDE68A}
-  /* Memorial */
-  .memo{background:#08081A;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;max-height:420px;overflow-y:auto;white-space:pre-wrap;color:#B8B8E0;line-height:1.7}
-  .legend{font-size:11px;color:var(--mut);margin-top:8px}
-  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--bg3);border:1px solid var(--line);font-size:11px;color:var(--mut)}
-  .section-toggle{cursor:pointer;user-select:none}
-  .section-toggle::after{content:" ▼";font-size:10px;color:var(--mut)}
-  .section-toggle.closed::after{content:" ▶"}
-  hr{border:0;border-top:1px solid var(--line);margin:16px 0}
-  .footer-note{color:var(--mut);font-size:11px;text-align:center;margin-top:20px}
-</style>
-</head>
+:root{--bg:#0B0B14;--bg2:#141427;--bg3:#1C1C34;--bg4:#252547;--line:#2A2A4A;--purple:#3F3BFF;--deep:#6018BA;--txt:#EAEAF5;--mut:#9A9ABF;--dim:#6B6B8A;--ok:#22C55E;--warn:#F59E0B;--err:#EF4444;--gold:#FACC15}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at top,#1a1a35 0%,var(--bg) 60%);color:var(--txt);font-family:'Barlow',system-ui,sans-serif;min-height:100vh;font-weight:400}
+button{font-family:inherit;cursor:pointer;border:0}
+input,select{font-family:inherit}
+/* HEADER + STEPPER */
+header{padding:20px 32px;border-bottom:1px solid var(--line);background:rgba(11,11,20,.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--deep));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.brand h1{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.brand h1 span{color:var(--mut);font-weight:500}
+.stepper{display:flex;gap:8px;margin-top:18px;align-items:center}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);cursor:pointer;transition:all .2s;opacity:.5}
+.step.on{opacity:1;background:linear-gradient(90deg,rgba(63,59,255,.2),rgba(96,24,186,.1));border-color:var(--purple)}
+.step.done{opacity:1;border-color:var(--ok)}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.step.on .n{background:var(--purple)}
+.step.done .n{background:var(--ok)}
+.step .t{font-weight:600;font-size:13px;letter-spacing:.02em}
+.step .t small{display:block;color:var(--mut);font-weight:400;font-size:11px;text-transform:none;letter-spacing:0}
+/* MAIN */
+main{max-width:1280px;margin:0 auto;padding:28px 32px 100px}
+.screen{display:none;animation:fade .3s}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h2.title{font-size:26px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+p.lead{color:var(--mut);font-size:14px;margin-bottom:24px;max-width:640px}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px}
+.card h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:14px}
+label{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:700}
+input[type=text],input[type=number],select{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:11px 14px;font-size:14px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(63,59,255,.15)}
+/* BUTTONS */
+.btn{background:linear-gradient(90deg,var(--purple),var(--deep));color:#fff;padding:12px 22px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:uppercase;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{filter:brightness(1.15)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.btn.ghost:hover{background:var(--bg3)}
+.btn.sm{padding:7px 14px;font-size:12px}
+.btn.danger{background:transparent;border:1px solid var(--err);color:#FCA5A5}
+/* STEP 1 — cargos em cards */
+.cargo-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:900px){.cargo-cards{grid-template-columns:repeat(2,1fr)}}
+.cargo-card{background:var(--bg3);border:2px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;position:relative}
+.cargo-card.on{border-color:var(--purple);background:linear-gradient(160deg,rgba(63,59,255,.15),rgba(96,24,186,.05))}
+.cargo-card .ic{font-size:24px;margin-bottom:8px}
+.cargo-card .nm{font-weight:700;font-size:14px}
+.cargo-card .mt{font-size:11px;color:var(--mut);margin-top:3px}
+.cargo-card.on::after{content:"✓";position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+/* STEP 2 — layout sidebar+canvas */
+.work{display:grid;grid-template-columns:240px 1fr;gap:20px}
+@media(max-width:900px){.work{grid-template-columns:1fr}}
+.side{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;height:fit-content;position:sticky;top:140px}
+.side .nav{display:flex;flex-direction:column;gap:4px}
+.side .nav-item{padding:12px 14px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.side .nav-item:hover{background:var(--bg3)}
+.side .nav-item.on{background:linear-gradient(90deg,var(--purple),var(--deep))}
+.side .nav-item .nm{font-weight:600;font-size:14px}
+.side .nav-item .st{font-size:11px;color:var(--mut)}
+.side .nav-item.on .st{color:rgba(255,255,255,.8)}
+.side .nav-item .dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.side .nav-item.ok .dot{background:var(--ok)}
+.canvas{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:24px;min-height:500px}
+.canvas-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.canvas-head h3{font-size:20px;font-weight:800}
+.canvas-head .meta{font-size:12px;color:var(--mut);margin-top:3px}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--bg3);border:1px solid var(--line);font-size:11px;color:var(--mut);font-weight:600;margin-right:4px}
+.tag.warn{color:#FCD34D;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.1)}
+/* CHAPA */
+.chapa{border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--bg3)}
+.chapa-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
+.chapa-h .tt{font-weight:700;font-size:15px}
+.fed-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.fed-chip{padding:8px 14px;border-radius:8px;background:var(--bg4);border:1px solid var(--line);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+.fed-chip.on{background:linear-gradient(90deg,var(--gold),#EAB308);color:#000;border-color:transparent}
+.fed-chip small{display:block;font-weight:400;opacity:.75;font-size:10px;margin-top:2px}
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+.search-row input{flex:1}
+.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px;max-height:260px;overflow-y:auto;padding:6px;background:var(--bg2);border-radius:8px;border:1px solid var(--line)}
+.part{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none}
+.part:hover{background:var(--bg4)}
+.part.on{background:rgba(63,59,255,.2)}
+.part.dis{opacity:.25;cursor:not-allowed}
+.part.fed{border-left:3px solid var(--gold);padding-left:5px}
+.part b{font-weight:700;flex:1}
+.part .bn{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+.hint{background:rgba(63,59,255,.08);border:1px solid rgba(63,59,255,.3);padding:10px 14px;border-radius:8px;font-size:13px;color:#C7C4FF;margin-bottom:14px}
+.hint.warn{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3);color:#FCD34D}
+.hint.err{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#FCA5A5}
+/* STEP 3 — resultado */
+.hero-cal{background:linear-gradient(160deg,rgba(63,59,255,.2),rgba(96,24,186,.08));border:1px solid rgba(63,59,255,.35);border-radius:16px;padding:24px;margin-bottom:24px}
+.hero-cal h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.hero-cal .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cd{background:rgba(11,11,20,.5);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:88px}
+.cd .dn{font-weight:800;font-size:15px;margin-bottom:6px}
+.cd .tg{display:block;padding:3px 6px;margin-top:3px;border-radius:4px;font-size:10px;font-weight:700}
+.cd .tg.tts{background:rgba(63,59,255,.35);color:#DDD9FF}
+.cd .tg.mqs{background:rgba(250,204,21,.22);color:#FDE68A}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tabs .tab{padding:12px 18px;cursor:pointer;font-weight:700;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs .tab.on{color:var(--txt);border-bottom-color:var(--purple)}
+.tabpane{display:none}.tabpane.on{display:block}
+.stat{display:flex;gap:24px;margin-bottom:18px;flex-wrap:wrap}
+.stat .s{background:var(--bg3);padding:12px 18px;border-radius:10px;border:1px solid var(--line)}
+.stat .s .v{font-size:22px;font-weight:800;color:#C7C4FF}
+.stat .s .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:rgba(63,59,255,.05)}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.bar{height:20px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--purple),var(--deep));display:flex;align-items:center;padding-left:8px;color:#fff;font-size:11px;font-weight:700;white-space:nowrap}
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.on{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--line);border-radius:14px;max-width:640px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-h{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-h h3{font-size:17px;font-weight:800}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-f{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.bench-row{display:grid;grid-template-columns:60px 1fr 90px;gap:10px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(42,42,74,.5)}
+.bench-row b{font-weight:700}.bench-row .nm{color:var(--mut);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bench-row input{padding:6px 10px;font-size:13px}
+/* NAV FOOTER */
+.nav-foot{display:flex;justify-content:space-between;margin-top:28px;gap:12px}
+.memo{background:#08081A;border:1px solid var(--line);border-radius:8px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;max-height:420px;overflow-y:auto;white-space:pre-wrap;color:#B8B8E0;line-height:1.75}
+details summary{cursor:pointer;padding:10px 14px;background:var(--bg3);border-radius:8px;font-weight:700;font-size:13px;user-select:none}
+details[open] summary{margin-bottom:10px}
+</style></head>
 <body>
 <header>
-  <h1>AVM <span>TempoCerto v2</span> — Simulador HGPE Multi-Cargo</h1>
-  <p>Circunscrição completa · Lei 9.504/97 art. 47, §2º · Bancada Câmara 2022 editável</p>
+  <div class="brand">
+    <div class="logo">AVM</div>
+    <h1>TempoCerto <span>v3 · Simulador HGPE</span></h1>
+  </div>
+  <div class="stepper">
+    <div class="step on" data-step="1" onclick="goStep(1)"><div class="n">1</div><div class="t">Configurar<small>UF, cargos e bancada</small></div></div>
+    <div class="step" data-step="2" onclick="goStep(2)"><div class="n">2</div><div class="t">Montar chapas<small>partidos e federações</small></div></div>
+    <div class="step" data-step="3" onclick="goStep(3)"><div class="n">3</div><div class="t">Resultado<small>blocos, inserções e memorial</small></div></div>
+  </div>
 </header>
 
 <main>
-  <!-- 1. Estado + cargos -->
+<!-- STEP 1 -->
+<div class="screen on" id="sc1">
+  <h2 class="title">Configurar simulação</h2>
+  <p class="lead">Escolha a circunscrição, os cargos e confira a bancada. O simulador adota a regra do art. 47, §2º da Lei 9.504/97 — 1/3 igualitário + 2/3 proporcional à bancada da Câmara do início da legislatura em curso.</p>
   <div class="card">
-    <h2>1. Circunscrição e cargos</h2>
-    <div class="sub">Escolha o estado e marque os cargos que quer simular. O bolo é separado por cargo — cada cargo tem sua configuração de chapas.</div>
-    <div class="grid grid-2">
-      <div>
-        <label>Estado (UF)</label>
-        <select id="uf"></select>
-      </div>
-      <div>
-        <label>Cargos simulados</label>
-        <div class="cargo-tabs" id="cargo-tabs"></div>
-      </div>
+    <h3>Circunscrição</h3>
+    <div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:end">
+      <div><label>Estado (UF)</label><select id="uf"></select></div>
+      <div><label>Ano de referência da bancada</label>
+        <select id="ano"><option value="2022" selected>Legislatura 2022 (para pleito 2026)</option><option value="2026">Legislatura 2026 (para pleito 2030)</option></select></div>
     </div>
   </div>
-
-  <!-- 2. Bancada -->
   <div class="card">
-    <h2 class="section-toggle" onclick="toggleSection('bench-body',this)">2. Bancada da Câmara (2022) — editável</h2>
-    <div class="sub">Base dos 2/3 proporcionais. Valores iniciais são a composição pós-eleição 2022; ajuste para refletir trocas, fusões ou cenário simulado.</div>
-    <div id="bench-body">
-      <div class="bench-editor" id="bench-list"></div>
-      <div class="legend">Total editável: <span id="bench-total">0</span> deputados federais.</div>
+    <h3>Cargos a simular</h3>
+    <div class="cargo-cards" id="cargos"></div>
+    <div class="hint" style="margin-top:14px">💡 <b>Presidente</b> tem circunscrição nacional; a UF só afeta a praça de veiculação, não o cálculo. Para senador, o bolo de 300s/bloco assume a eleição de 2026 (1 vaga).</div>
+  </div>
+  <div class="card">
+    <h3>Bancada da Câmara</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div><div style="font-size:14px">Total: <b id="bt">0</b> deputados federais</div>
+        <div style="color:var(--mut);font-size:12px;margin-top:2px">Base para os 2/3 proporcionais. Edite para refletir migrações, fusões ou cenário simulado.</div></div>
+      <button class="btn ghost sm" onclick="openBench()">⚙ Editar bancada</button>
     </div>
   </div>
+  <div class="nav-foot"><div></div><button class="btn" onclick="goStep(2)">Próximo: montar chapas →</button></div>
+</div>
 
-  <!-- 3. Configuração por cargo -->
-  <div class="card">
-    <h2>3. Configuração de chapas por cargo</h2>
-    <div class="sub">Para cada cargo ativado, monte as chapas concorrentes. Deputado federal e estadual <b>não admitem coligação</b> desde a EC 97/2017 — só partido isolado ou federação.</div>
-    <div id="cargo-config"></div>
+<!-- STEP 2 -->
+<div class="screen" id="sc2">
+  <h2 class="title">Montar chapas</h2>
+  <p class="lead">Para cada cargo ativado, monte as chapas concorrentes. Navegue pelos cargos na lateral. Federações entram como bloco único; coligações são vedadas para deputado federal e estadual (EC 97/2017).</p>
+  <div class="work">
+    <div class="side"><div class="nav" id="navCargos"></div></div>
+    <div class="canvas" id="canvas"></div>
   </div>
-
-  <div class="card" style="border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05)">
-    <h2>Nota sobre tempo por candidato</h2>
-    <div class="sub" style="margin-bottom:0">O HGPE distribui tempo à <b>legenda</b>, não ao candidato. A partição entre os nomes lançados é decisão política interna do partido ou federação — tipicamente concentrada em poucos puxadores, não dividida em média aritmética. Por isso o simulador não calcula "tempo por candidato": o número induziria ao erro.</div>
+  <div class="nav-foot">
+    <button class="btn ghost" onclick="goStep(1)">← Voltar</button>
+    <button class="btn" onclick="goStep(3)">Ver resultado →</button>
   </div>
+</div>
 
-  <div style="text-align:center;margin:28px 0">
-    <button onclick="simular()">▶ SIMULAR TEMPO DE HGPE</button>
-    <button class="ghost" onclick="reset()">Zerar</button>
+<!-- STEP 3 -->
+<div class="screen" id="sc3">
+  <h2 class="title">Resultado da simulação</h2>
+  <p class="lead">Distribuição de tempo por cargo, por chapa e por partido dentro da chapa — em blocos diários e em inserções.</p>
+  <div id="heroCal"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panes"></div>
+  <details style="margin-top:20px"><summary>📋 Memorial de cálculo (auditoria)</summary><div class="memo" id="memo"></div></details>
+  <div class="nav-foot">
+    <button class="btn ghost" onclick="goStep(2)">← Ajustar chapas</button>
+    <button class="btn ghost" onclick="window.print()">🖨 Imprimir / PDF</button>
   </div>
-
-  <!-- 5. Resultado -->
-  <div id="resultado"></div>
+</div>
 </main>
 
+<!-- MODAL BANCADA -->
+<div class="modal" id="mBench"><div class="modal-box">
+  <div class="modal-h"><h3>Editar bancada da Câmara</h3><button class="btn ghost sm" onclick="closeBench()">✕</button></div>
+  <div class="modal-body"><input type="text" id="bSearch" placeholder="Buscar partido..." style="margin-bottom:12px" oninput="renderBench()"><div id="bList"></div></div>
+  <div class="modal-f"><button class="btn ghost" onclick="resetBench()">Restaurar 2022</button><button class="btn" onclick="closeBench()">Feito</button></div>
+</div></div>
+
 <script>
-/* =================== DADOS =================== */
-const UFS = ["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
-
-// Partidos registrados no TSE + bancada pós-eleição 2022 (Câmara dos Deputados)
-// Valores aproximados oficiais publicados pela Câmara; editáveis pelo usuário.
-const PARTIDOS = [
-  {s:"PL",n:"Partido Liberal",b:99},
-  {s:"PT",n:"Partido dos Trabalhadores",b:68},
-  {s:"UNIÃO",n:"União Brasil",b:59},
-  {s:"PP",n:"Progressistas",b:49},
-  {s:"MDB",n:"Movimento Democrático Brasileiro",b:42},
-  {s:"PSD",n:"Partido Social Democrático",b:42},
-  {s:"REPUBLICANOS",n:"Republicanos",b:41},
-  {s:"PDT",n:"Partido Democrático Trabalhista",b:17},
-  {s:"PSB",n:"Partido Socialista Brasileiro",b:14},
-  {s:"PSDB",n:"Partido da Social Democracia Brasileira",b:13},
-  {s:"PODE",n:"Podemos",b:12},
-  {s:"PSOL",n:"Partido Socialismo e Liberdade",b:12},
-  {s:"AVANTE",n:"Avante",b:7},
-  {s:"PCdoB",n:"Partido Comunista do Brasil",b:6},
-  {s:"PV",n:"Partido Verde",b:6},
-  {s:"CIDADANIA",n:"Cidadania",b:4},
-  {s:"SOLIDARIEDADE",n:"Solidariedade",b:4},
-  {s:"PRD",n:"Partido Renovação Democrática",b:4},
-  {s:"NOVO",n:"Partido Novo",b:3},
-  {s:"MOBILIZA",n:"Mobiliza",b:1},
-  {s:"REDE",n:"Rede Sustentabilidade",b:1},
-  {s:"AGIR",n:"Agir",b:0},
-  {s:"DC",n:"Democracia Cristã",b:0},
-  {s:"PCB",n:"Partido Comunista Brasileiro",b:0},
-  {s:"PCO",n:"Partido da Causa Operária",b:0},
-  {s:"PMB",n:"Partido da Mulher Brasileira",b:0},
-  {s:"PMN",n:"Partido da Mobilização Nacional",b:0},
-  {s:"PRTB",n:"Partido Renovador Trabalhista Brasileiro",b:0},
-  {s:"PSTU",n:"Partido Socialista dos Trabalhadores Unificado",b:0},
-  {s:"UP",n:"Unidade Popular",b:0}
+const UFS=["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
+const PARTIDOS=[
+ {s:"PL",n:"Partido Liberal",b:99},{s:"PT",n:"Partido dos Trabalhadores",b:68},{s:"UNIÃO",n:"União Brasil",b:59},{s:"PP",n:"Progressistas",b:49},
+ {s:"MDB",n:"Movimento Democrático Brasileiro",b:42},{s:"PSD",n:"Partido Social Democrático",b:42},{s:"REPUBLICANOS",n:"Republicanos",b:41},
+ {s:"PDT",n:"Partido Democrático Trabalhista",b:17},{s:"PSB",n:"Partido Socialista Brasileiro",b:14},{s:"PSDB",n:"PSDB",b:13},
+ {s:"PODE",n:"Podemos",b:12},{s:"PSOL",n:"Partido Socialismo e Liberdade",b:12},{s:"AVANTE",n:"Avante",b:7},{s:"PCdoB",n:"PC do Brasil",b:6},
+ {s:"PV",n:"Partido Verde",b:6},{s:"CIDADANIA",n:"Cidadania",b:4},{s:"SOLIDARIEDADE",n:"Solidariedade",b:4},{s:"PRD",n:"Partido Renovação Democrática",b:4},
+ {s:"NOVO",n:"Partido Novo",b:3},{s:"MOBILIZA",n:"Mobiliza",b:1},{s:"REDE",n:"Rede Sustentabilidade",b:1},
+ {s:"AGIR",n:"Agir",b:0},{s:"DC",n:"Democracia Cristã",b:0},{s:"PCB",n:"PCB",b:0},{s:"PCO",n:"PCO",b:0},{s:"PMB",n:"PMB",b:0},
+ {s:"PMN",n:"PMN",b:0},{s:"PRTB",n:"PRTB",b:0},{s:"PSTU",n:"PSTU",b:0},{s:"UP",n:"Unidade Popular",b:0}
 ];
-
-// Federações vigentes (2022/2026) — agrupamentos com bancada somada para efeito de art. 47
-const FEDERACOES = {
-  "FE BRASIL":["PT","PCdoB","PV"],
-  "PSDB CIDADANIA":["PSDB","CIDADANIA"],
-  "PSOL REDE":["PSOL","REDE"]
+const FED={"FE BRASIL":["PT","PCdoB","PV"],"PSDB/CIDADANIA":["PSDB","CIDADANIA"],"PSOL/REDE":["PSOL","REDE"]};
+const CARGOS={
+ presidente:{nm:"Presidente",ic:"🇧🇷",bolo:750,dias:"tts",mt:"750s/bloco · Ter/Qui/Sáb"},
+ governador:{nm:"Governador",ic:"🏛",bolo:600,dias:"mqs",mt:"600s/bloco · Seg/Qua/Sex"},
+ senador:{nm:"Senador",ic:"⚖",bolo:300,dias:"mqs",mt:"300s/bloco · Seg/Qua/Sex"},
+ depfed:{nm:"Dep. Federal",ic:"🏢",bolo:750,dias:"tts",mt:"750s/bloco · sem coligação",semcol:true},
+ depest:{nm:"Dep. Estadual",ic:"🏬",bolo:600,dias:"mqs",mt:"600s/bloco · sem coligação",semcol:true}
 };
+// Inserções: 70min/dia em rádio + 70min/dia em TV = 8400s/dia totais, divididos entre os cargos em pleito
+// Resolução TSE 2022: presidente 60%, outros proporcionais. Simplificação: mesmo critério art.47 para o bolo de cada cargo.
+// Adotamos bolo de inserções diárias por cargo: presidente 5040s/dia, governador 2520s/dia, senador 1260s/dia, depfed 5040s/dia, depest 2520s/dia (aproximação didática)
+const INSERT_DIA={presidente:5040,governador:2520,senador:1260,depfed:5040,depest:2520};
 
-const CARGOS = {
-  presidente:{nome:"Presidente",bolo:750,dias:"tts",circ:"nacional"},
-  governador:{nome:"Governador",bolo:600,dias:"mqs",circ:"estadual"},
-  senador:{nome:"Senador",bolo:300,dias:"mqs",circ:"estadual"},
-  depfed:{nome:"Dep. Federal",bolo:750,dias:"tts",circ:"estadual",semcol:true},
-  depest:{nome:"Dep. Estadual",bolo:600,dias:"mqs",circ:"estadual",semcol:true}
-};
+const state={uf:"SP",ano:"2022",ativos:{presidente:true,governador:true,senador:true,depfed:true,depest:true},bancada:Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b])),chapas:{presidente:[],governador:[],senador:[],depfed:[],depest:[]},cargoAtual:"presidente",busca:""};
 
-/* =================== ESTADO =================== */
-const state = {
-  uf:"SP",
-  ativos:{presidente:true,governador:true,senador:true,depfed:true,depest:true},
-  bancada:Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b])),
-  chapas:{presidente:[],governador:[],senador:[],depfed:[],depest:[]}
-};
-
-/* =================== INIT UI =================== */
-function initUF(){
-  const sel=document.getElementById('uf');
-  UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;if(u==="SP")o.selected=true;sel.appendChild(o);});
-  sel.onchange=e=>state.uf=e.target.value;
-}
+/* INIT */
+function initUF(){const s=document.getElementById('uf');UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;if(u==="SP")o.selected=true;s.appendChild(o);});s.onchange=e=>state.uf=e.target.value;}
 function initCargos(){
-  const c=document.getElementById('cargo-tabs');
-  Object.entries(CARGOS).forEach(([k,v])=>{
-    const d=document.createElement('div');
-    d.className='cargo-tab on';d.dataset.k=k;
-    d.innerHTML=`<span class="chk"></span>${v.nome}`;
-    d.onclick=()=>{state.ativos[k]=!state.ativos[k];d.classList.toggle('on',state.ativos[k]);renderCargoConfig();};
-    c.appendChild(d);
-  });
+ const h=document.getElementById('cargos');
+ Object.entries(CARGOS).forEach(([k,v])=>{
+  const d=document.createElement('div');d.className='cargo-card on';d.dataset.k=k;
+  d.innerHTML=`<div class="ic">${v.ic}</div><div class="nm">${v.nm}</div><div class="mt">${v.mt}</div>`;
+  d.onclick=()=>{state.ativos[k]=!state.ativos[k];d.classList.toggle('on',state.ativos[k]);};
+  h.appendChild(d);
+ });
 }
-function initBench(){
-  const b=document.getElementById('bench-list');
-  PARTIDOS.forEach(p=>{
-    const r=document.createElement('div');r.className='bench-row';
-    r.innerHTML=`<span class="sigla">${p.s}</span><span class="nome">${p.n}</span>`;
-    const i=document.createElement('input');i.type='number';i.min=0;i.value=p.b;i.className='num';
-    i.onchange=e=>{state.bancada[p.s]=parseInt(e.target.value)||0;updateBenchTotal();};
-    r.appendChild(i);b.appendChild(r);
-  });
-  updateBenchTotal();
-}
-function updateBenchTotal(){
-  const t=Object.values(state.bancada).reduce((a,b)=>a+b,0);
-  document.getElementById('bench-total').textContent=t;
-}
-function toggleSection(id,el){document.getElementById(id).style.display=el.classList.toggle('closed')?'none':'';}
-
-/* =================== CHAPAS =================== */
-function renderCargoConfig(){
-  const host=document.getElementById('cargo-config');
-  host.innerHTML='';
-  Object.entries(CARGOS).forEach(([k,v])=>{
-    if(!state.ativos[k])return;
-    const sec=document.createElement('div');
-    sec.innerHTML=`<div class="flex" style="justify-content:space-between;margin:14px 0 8px">
-      <div><b style="font-size:15px">${v.nome}</b> <span class="tag">${v.bolo}s/bloco</span> <span class="tag">${v.dias==='tts'?'Ter/Qui/Sáb':'Seg/Qua/Sex'}</span>${v.semcol?' <span class="tag" style="color:#FCD34D;border-color:#F59E0B">sem coligação</span>':''}</div>
-      <button class="sm" onclick="addChapa('${k}')">+ chapa</button>
-    </div>`;
-    const list=document.createElement('div');list.id=`chapas-${k}`;
-    sec.appendChild(list);host.appendChild(sec);
-    if(v.semcol && state.chapas[k].some(c=>c.partidos.length>1 && !chapaEhSoFederacao(c))){
-      const w=document.createElement('div');w.className='err-box';
-      w.innerHTML=`⚠ <b>Coligação vedada</b> para ${v.nome.toLowerCase()} (EC 97/2017; Lei 9.504/97 art. 6º). Chapa com 2+ partidos só é válida como <b>federação partidária</b>.`;
-      list.appendChild(w);
-    }
-    renderChapasDoCargo(k);
-  });
-  refreshCandPart();
-}
-function addChapa(k){
-  state.chapas[k].push({id:Date.now()+Math.random(),partidos:[],federacoes:[]});
-  renderCargoConfig();
-}
-function removeChapa(k,id){state.chapas[k]=state.chapas[k].filter(c=>c.id!==id);renderCargoConfig();}
-function chapaEhSoFederacao(c){
-  if(c.federacoes.length===0)return false;
-  const fedParts=c.federacoes.flatMap(f=>FEDERACOES[f]);
-  return c.partidos.every(p=>fedParts.includes(p));
-}
-function renderChapasDoCargo(k){
-  const host=document.getElementById(`chapas-${k}`);
-  const semcol=CARGOS[k].semcol;
-  // Partidos já alocados em outras chapas do MESMO cargo
-  const usados=new Set();
-  state.chapas[k].forEach(c=>c.partidos.forEach(p=>usados.add(p)));
-  state.chapas[k].forEach((c,idx)=>{
-    const div=document.createElement('div');div.className='chapa';
-    div.innerHTML=`<div class="chapa-head">
-      <div class="chapa-title">Chapa ${idx+1} <span class="tag">${c.partidos.length} partido(s)</span></div>
-      <button class="ghost sm" onclick="removeChapa('${k}',${c.id})">remover</button>
-    </div>`;
-    // Federações
-    const fed=document.createElement('div');
-    fed.innerHTML=`<label>Federações nesta chapa</label>`;
-    const fline=document.createElement('div');fline.className='flex';
-    Object.keys(FEDERACOES).forEach(fn=>{
-      const cb=document.createElement('label');cb.className='part-item';
-      const on=c.federacoes.includes(fn);
-      cb.innerHTML=`<input type="checkbox" ${on?'checked':''}> <b>${fn}</b> <span class="bench">(${FEDERACOES[fn].join('+')})</span>`;
-      cb.querySelector('input').onchange=e=>{
-        if(e.target.checked){
-          c.federacoes.push(fn);
-          FEDERACOES[fn].forEach(p=>{if(!c.partidos.includes(p))c.partidos.push(p);});
-        }else{
-          c.federacoes=c.federacoes.filter(x=>x!==fn);
-        }
-        renderCargoConfig();
-      };
-      fline.appendChild(cb);
-    });
-    fed.appendChild(fline);div.appendChild(fed);
-    // Partidos
-    const pdiv=document.createElement('div');pdiv.style.marginTop='12px';
-    pdiv.innerHTML=`<label>Partidos na chapa</label>`;
-    const g=document.createElement('div');g.className='partidos-grid';
-    const fedParts=c.federacoes.flatMap(f=>FEDERACOES[f]);
-    PARTIDOS.forEach(p=>{
-      const on=c.partidos.includes(p.s);
-      const emOutra=usados.has(p.s) && !on;
-      const emFed=fedParts.includes(p.s);
-      const lbl=document.createElement('label');
-      lbl.className='part-item'+(emFed?' fed-badge':'');
-      lbl.style.opacity=emOutra?'.35':'1';
-      lbl.innerHTML=`<input type="checkbox" ${on?'checked':''} ${emOutra||emFed?'disabled':''}> <b>${p.s}</b><span class="bench">${state.bancada[p.s]||0}</span>`;
-      lbl.querySelector('input').onchange=e=>{
-        if(e.target.checked){
-          if(semcol && c.partidos.length>=1 && !emFed){
-            alert(`${CARGOS[k].nome}: coligação vedada. Use federação ou chapa isolada.`);
-            e.target.checked=false;return;
-          }
-          c.partidos.push(p.s);
-        }else{
-          c.partidos=c.partidos.filter(x=>x!==p.s);
-          c.federacoes=c.federacoes.filter(fn=>!FEDERACOES[fn].includes(p.s));
-        }
-        renderCargoConfig();
-      };
-      g.appendChild(lbl);
-    });
-    pdiv.appendChild(g);div.appendChild(pdiv);
-    host.appendChild(div);
-  });
-}
-function refreshCandPart(){}
-
-/* =================== CÁLCULO =================== */
-/* Art. 47 §2º:
-   1/3 do bolo igualmente entre todas as unidades concorrentes (partido isolado, federação, coligação)
-   2/3 proporcionais à bancada da Câmara (federação = soma; coligação = soma dos partidos) */
-function calcularCargo(k){
-  const cfg=CARGOS[k];
-  const unidades=state.chapas[k].map((c,idx)=>{
-    // Unidades dentro da chapa: cada federação conta como 1; cada partido isolado (não-federado) conta como 1
-    // MAS, para HGPE de majoritário (coligação permitida), a CHAPA inteira é a unidade.
-    // Para dep fed/est (sem coligação), cada partido ou federação É uma unidade separada (uma "chapa" = 1 unidade).
-    if(cfg.semcol){
-      const fedParts=c.federacoes.flatMap(f=>FEDERACOES[f]);
-      const soltos=c.partidos.filter(p=>!fedParts.includes(p));
-      const us=[];
-      c.federacoes.forEach(fn=>{
-        const pts=FEDERACOES[fn].filter(p=>c.partidos.includes(p));
-        us.push({nome:`${fn}`,tipo:'Federação',partidos:pts,bancada:pts.reduce((a,p)=>a+(state.bancada[p]||0),0),chapa:idx+1});
-      });
-      soltos.forEach(p=>us.push({nome:p,tipo:'Partido isolado',partidos:[p],bancada:state.bancada[p]||0,chapa:idx+1}));
-      return us;
-    }else{
-      // Majoritário: chapa inteira é unidade
-      return [{nome:`Chapa ${idx+1}: ${c.partidos.join('+')||'(vazia)'}`,tipo:c.partidos.length>1?'Coligação':(c.federacoes.length?'Federação':'Partido isolado'),partidos:c.partidos,bancada:c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0),chapa:idx+1,federacoes:c.federacoes}];
-    }
-  }).flat().filter(u=>u.partidos.length>0);
-
-  const n=unidades.length;
-  if(n===0)return{unidades:[],bolo:cfg.bolo,memo:"Nenhuma chapa configurada."};
-  const bolo=cfg.bolo;
-  const umterco=bolo/3;
-  const doisterco=bolo*2/3;
-  const bancadaTotal=unidades.reduce((a,u)=>a+u.bancada,0);
-  const parteIgual=umterco/n;
-  unidades.forEach(u=>{
-    u.tIgual=parteIgual;
-    u.tProp=bancadaTotal>0?(doisterco*u.bancada/bancadaTotal):0;
-    u.tTotal=u.tIgual+u.tProp;
-    u.tDia=u.tTotal*4; // 4 blocos/dia
-  });
-  let memo=`▸ ${cfg.nome.toUpperCase()} — bolo por bloco: ${bolo}s\n`;
-  memo+=`  1/3 igualitário = ${umterco.toFixed(2)}s ÷ ${n} unidades = ${parteIgual.toFixed(2)}s/unidade\n`;
-  memo+=`  2/3 proporcionais = ${doisterco.toFixed(2)}s, base bancada total = ${bancadaTotal} dep.\n\n`;
-  unidades.forEach(u=>{
-    memo+=`  • ${u.nome} [${u.tipo}] — bancada ${u.bancada}\n`;
-    memo+=`      ${parteIgual.toFixed(2)}s (igual) + ${doisterco.toFixed(2)}×${u.bancada}/${bancadaTotal} = ${u.tProp.toFixed(2)}s → ${u.tTotal.toFixed(2)}s/bloco\n`;
-    memo+=`      × 4 blocos/dia = ${u.tDia.toFixed(2)}s/dia\n`;
-  });
-  return{unidades,bolo,memo,parteIgual,bancadaTotal};
+function updBT(){document.getElementById('bt').textContent=Object.values(state.bancada).reduce((a,b)=>a+b,0);}
+function openBench(){document.getElementById('mBench').classList.add('on');renderBench();}
+function closeBench(){document.getElementById('mBench').classList.remove('on');updBT();}
+function resetBench(){PARTIDOS.forEach(p=>state.bancada[p.s]=p.b);renderBench();updBT();}
+function renderBench(){
+ const q=document.getElementById('bSearch').value.toLowerCase();
+ const list=document.getElementById('bList');list.innerHTML='';
+ PARTIDOS.filter(p=>p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).forEach(p=>{
+  const r=document.createElement('div');r.className='bench-row';
+  r.innerHTML=`<b>${p.s}</b><span class="nm">${p.n}</span>`;
+  const i=document.createElement('input');i.type='number';i.min=0;i.className='num';i.value=state.bancada[p.s];
+  i.onchange=e=>{state.bancada[p.s]=parseInt(e.target.value)||0;updBT();};
+  r.appendChild(i);list.appendChild(r);
+ });
 }
 
-function fmtT(s){if(s<60)return s.toFixed(1)+"s";const m=Math.floor(s/60);const r=s-m*60;return `${m}min ${r.toFixed(1)}s`;}
+/* NAVEGAÇÃO ENTRE PASSOS */
+function goStep(n){
+ if(n===2){
+  const ativos=Object.keys(CARGOS).filter(k=>state.ativos[k]);
+  if(ativos.length===0){alert("Ative ao menos um cargo.");return;}
+  if(!state.ativos[state.cargoAtual])state.cargoAtual=ativos[0];
+  renderNav();renderCanvas();
+ }
+ if(n===3)simular();
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+ document.getElementById('sc'+n).classList.add('on');
+ document.querySelectorAll('.step').forEach(s=>{const sn=+s.dataset.step;s.classList.toggle('on',sn===n);s.classList.toggle('done',sn<n);});
+ window.scrollTo({top:0,behavior:'smooth'});
+}
 
+/* STEP 2 — SIDEBAR + CANVAS */
+function renderNav(){
+ const h=document.getElementById('navCargos');h.innerHTML='';
+ Object.entries(CARGOS).forEach(([k,v])=>{
+  if(!state.ativos[k])return;
+  const n=state.chapas[k].length;
+  const ok=n>=2 && state.chapas[k].every(c=>c.partidos.length>0);
+  const d=document.createElement('div');d.className='nav-item'+(k===state.cargoAtual?' on':'')+(ok?' ok':'');
+  d.innerHTML=`<div><div class="nm">${v.ic} ${v.nm}</div><div class="st">${n} chapa(s)</div></div><div class="dot"></div>`;
+  d.onclick=()=>{state.cargoAtual=k;renderNav();renderCanvas();};
+  h.appendChild(d);
+ });
+}
+function renderCanvas(){
+ const k=state.cargoAtual,v=CARGOS[k];
+ const c=document.getElementById('canvas');
+ const chs=state.chapas[k];
+ let html=`<div class="canvas-head"><div><h3>${v.ic} ${v.nm}</h3><div class="meta">${v.mt}</div></div>
+  <button class="btn sm" onclick="addChapa()">+ Nova chapa</button></div>`;
+ if(v.semcol)html+=`<div class="hint warn">⚠ Coligação vedada desde a EC 97/2017. Cada chapa aqui é <b>um partido isolado</b> ou <b>uma federação</b>.</div>`;
+ if(chs.length===0)html+=`<div class="hint">Nenhuma chapa ainda. Clique em "+ Nova chapa" para começar.</div>`;
+ chs.forEach((ch,i)=>html+=renderChapa(k,ch,i));
+ c.innerHTML=html;
+}
+function addChapa(){state.chapas[state.cargoAtual].push({id:Date.now()+Math.random(),partidos:[],federacoes:[]});renderNav();renderCanvas();}
+function remChapa(i){state.chapas[state.cargoAtual].splice(i,1);renderNav();renderCanvas();}
+function renderChapa(k,ch,idx){
+ const v=CARGOS[k],semcol=v.semcol;
+ const usados=new Set();state.chapas[k].forEach((c,ci)=>{if(ci!==idx)c.partidos.forEach(p=>usados.add(p));});
+ const fedParts=ch.federacoes.flatMap(f=>FED[f]);
+ let h=`<div class="chapa"><div class="chapa-h"><div class="tt">Chapa ${idx+1} <span class="tag">${ch.partidos.length} partido(s)</span>${ch.federacoes.length?' <span class="tag warn">federada</span>':''}</div>
+  <button class="btn danger sm" onclick="remChapa(${idx})">remover</button></div>`;
+ h+=`<label>Federação (opcional — entra como bloco único)</label><div class="fed-list">`;
+ Object.keys(FED).forEach(fn=>{
+  const on=ch.federacoes.includes(fn);
+  h+=`<div class="fed-chip${on?' on':''}" onclick="togFed(${idx},'${fn}')"><b>${fn}</b><small>${FED[fn].join(' + ')}</small></div>`;
+ });
+ h+=`</div>`;
+ if(!semcol || ch.federacoes.length===0){
+  h+=`<label>Partidos</label>`;
+  h+=`<div class="search-row"><input type="text" placeholder="Buscar sigla..." oninput="state.busca=this.value;renderCanvas();" value="${state.busca}"></div>`;
+  h+=`<div class="part-grid">`;
+  const q=state.busca.toLowerCase();
+  PARTIDOS.filter(p=>!q||p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).forEach(p=>{
+   const on=ch.partidos.includes(p.s);
+   const emFed=fedParts.includes(p.s);
+   const dis=(usados.has(p.s)&&!on)||emFed||(semcol&&!on&&ch.partidos.length>=1&&ch.federacoes.length===0);
+   h+=`<div class="part${on?' on':''}${dis?' dis':''}${emFed?' fed':''}" onclick="${dis?'':`togPart(${idx},'${p.s}')`}"><b>${p.s}</b><span class="bn">${state.bancada[p.s]||0}</span></div>`;
+  });
+  h+=`</div>`;
+ }else{h+=`<div class="hint">Chapa é federação ${ch.federacoes.join(' + ')} — os partidos-membros entram automaticamente.</div>`;}
+ h+=`</div>`;return h;
+}
+function togFed(idx,fn){
+ const ch=state.chapas[state.cargoAtual][idx];
+ if(ch.federacoes.includes(fn)){
+  ch.federacoes=ch.federacoes.filter(x=>x!==fn);
+  ch.partidos=ch.partidos.filter(p=>!FED[fn].includes(p));
+ }else{
+  ch.federacoes.push(fn);
+  FED[fn].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});
+ }
+ renderNav();renderCanvas();
+}
+function togPart(idx,s){
+ const ch=state.chapas[state.cargoAtual][idx];
+ if(ch.partidos.includes(s))ch.partidos=ch.partidos.filter(x=>x!==s);
+ else ch.partidos.push(s);
+ renderNav();renderCanvas();
+}
+
+/* CÁLCULO */
+function calcCargo(k){
+ const cfg=CARGOS[k];
+ const unidades=state.chapas[k].map((c,i)=>{
+  if(cfg.semcol){
+   const fp=c.federacoes.flatMap(f=>FED[f]);
+   const soltos=c.partidos.filter(p=>!fp.includes(p));
+   const us=[];
+   c.federacoes.forEach(fn=>{const pts=FED[fn].filter(p=>c.partidos.includes(p));us.push({nome:fn,tipo:"Federação",partidos:pts,bancada:pts.reduce((a,p)=>a+(state.bancada[p]||0),0)});});
+   soltos.forEach(p=>us.push({nome:p,tipo:"Partido isolado",partidos:[p],bancada:state.bancada[p]||0}));
+   return us;
+  }
+  return [{nome:`Chapa ${i+1}`,tipo:c.partidos.length>1?(c.federacoes.length===1&&c.partidos.every(p=>FED[c.federacoes[0]].includes(p))?"Federação":"Coligação"):"Partido isolado",
+   partidos:c.partidos,bancada:c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0),federacoes:c.federacoes}];
+ }).flat().filter(u=>u.partidos.length>0);
+ const n=unidades.length;if(n===0)return{unidades:[],bolo:cfg.bolo,memo:"Sem chapas."};
+ const bolo=cfg.bolo,um=bolo/3,dois=bolo*2/3;
+ const bt=unidades.reduce((a,u)=>a+u.bancada,0);const pig=um/n;
+ unidades.forEach(u=>{u.tIg=pig;u.tPr=bt>0?dois*u.bancada/bt:0;u.tB=u.tIg+u.tPr;u.tD=u.tB*4;u.tIns=INSERT_DIA[k]? (INSERT_DIA[k]/3/n)+(INSERT_DIA[k]*2/3*(bt>0?u.bancada/bt:0)):0;});
+ let m=`▸ ${cfg.nm.toUpperCase()} — bolo ${bolo}s/bloco\n  1/3 = ${um.toFixed(1)}s ÷ ${n} = ${pig.toFixed(1)}s/unid (igual)\n  2/3 = ${dois.toFixed(1)}s proporcional a bancada (total ${bt})\n`;
+ unidades.forEach(u=>{m+=`  • ${u.nome} [${u.tipo}] bancada=${u.bancada} → ${pig.toFixed(1)} + ${u.tPr.toFixed(1)} = ${u.tB.toFixed(1)}s/bloco · ${u.tD.toFixed(1)}s/dia · inserções ${u.tIns.toFixed(1)}s/dia\n`;});
+ return{unidades,bolo,memo:m+"\n",parteIgual:pig,bancadaTotal:bt};
+}
+function fmtT(s){if(s<60)return s.toFixed(1)+"s";const m=Math.floor(s/60);return `${m}min ${(s-m*60).toFixed(0)}s`;}
+
+/* STEP 3 — RESULTADO */
 function simular(){
-  const cargosAtivos=Object.keys(CARGOS).filter(k=>state.ativos[k]);
-  const res=document.getElementById('resultado');res.innerHTML='';
-  if(cargosAtivos.length===0){res.innerHTML='<div class="err-box">Ative pelo menos um cargo.</div>';return;}
-  let memoGeral=`═══ MEMORIAL DE CÁLCULO — ${state.uf} ═══\n`;
-  memoGeral+=`Base legal: Lei 9.504/97 art. 47, §2º (1/3 igualitário + 2/3 proporcional à bancada da Câmara).\n`;
-  memoGeral+=`Bancada de referência: Câmara 2022 (editável). Total: ${Object.values(state.bancada).reduce((a,b)=>a+b,0)} deputados.\n\n`;
-
-  // Calendário
-  const diasHTML=`<div class="card"><h2>Calendário HGPE — semana-tipo</h2>
-    <div class="sub">Ter/Qui/Sáb: presidente e deputado federal · Seg/Qua/Sex: governador, senador, deputado estadual. 4 blocos diários por cargo (rádio 7h e 12h; TV 13h e 20h30).</div>
-    <div class="cal">${['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map((d,i)=>{
-      const mqs=[0,2,4].includes(i),tts=[1,3,5].includes(i);
-      let tags='';
-      if(tts){if(state.ativos.presidente)tags+='<span class="cal-tag tts">Presidente</span>';if(state.ativos.depfed)tags+='<span class="cal-tag tts">Dep. Federal</span>';}
-      if(mqs){if(state.ativos.governador)tags+='<span class="cal-tag mqs">Governador</span>';if(state.ativos.senador)tags+='<span class="cal-tag mqs">Senador</span>';if(state.ativos.depest)tags+='<span class="cal-tag mqs">Dep. Estadual</span>';}
-      if(i===6)tags='<span style="color:var(--mut);font-size:11px">—</span>';
-      return `<div class="cal-day"><div class="d">${d}</div>${tags}</div>`;
-    }).join('')}</div></div>`;
-  res.innerHTML+=diasHTML;
-
-  cargosAtivos.forEach(k=>{
-    const r=calcularCargo(k);
-    if(r.unidades.length===0){
-      res.innerHTML+=`<div class="result-cargo"><div class="result-head"><h3>${CARGOS[k].nome}</h3></div><div class="result-body"><div class="warn-box">Nenhuma chapa configurada.</div></div></div>`;
-      return;
-    }
-    const max=Math.max(...r.unidades.map(u=>u.tTotal));
-    const sorted=[...r.unidades].sort((a,b)=>b.tTotal-a.tTotal);
-    let html=`<div class="result-cargo"><div class="result-head"><h3>${CARGOS[k].nome} <span class="pill">bolo ${r.bolo}s/bloco</span></h3></div><div class="result-body">`;
-    html+=`<table><thead><tr><th>Unidade</th><th>Tipo</th><th class="num">Bancada</th><th class="num">Por bloco</th><th class="num">Por dia</th><th>Distribuição visual</th></tr></thead><tbody>`;
-    sorted.forEach(u=>{
-      const pct=(u.tTotal/max*100).toFixed(1);
-      html+=`<tr><td><b>${u.nome}</b></td><td>${u.tipo}</td><td class="num">${u.bancada}</td><td class="num">${fmtT(u.tTotal)}</td><td class="num">${fmtT(u.tDia)}</td>
-        <td style="min-width:180px"><div class="bar"><div style="width:${pct}%">${u.tTotal.toFixed(1)}s</div></div></td></tr>`;
-      // Quebra por partido dentro de federação/coligação
-      if(u.partidos.length>1){
-        const bTot=u.bancada||1;
-        u.partidos.forEach(p=>{
-          const share=(state.bancada[p]||0)/bTot;
-          const tSub=u.tTotal*share;
-          html+=`<tr><td style="padding-left:32px;color:var(--mut)">↳ ${p}</td><td style="color:var(--mut)">${state.bancada[p]||0} dep.</td><td class="num">${state.bancada[p]||0}</td><td class="num">${fmtT(tSub)}</td><td class="num">${fmtT(tSub*4)}</td><td><div class="bar" style="height:14px"><div style="width:${(tSub/max*100).toFixed(1)}%;background:linear-gradient(90deg,#6018BA,#3F3BFF);opacity:.6;font-size:10px">${tSub.toFixed(1)}s</div></div></td></tr>`;
-        });
-      }
+ const ativos=Object.keys(CARGOS).filter(k=>state.ativos[k]);
+ // Calendário hero
+ const dn=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+ let cal=`<div class="hero-cal"><h3>📅 Calendário HGPE — semana-tipo em ${state.uf}</h3><div class="sub">4 blocos diários por cargo (rádio 7h e 12h · TV 13h e 20h30) + inserções ao longo da programação</div><div class="cal">`;
+ dn.forEach((d,i)=>{
+  const mqs=[0,2,4].includes(i),tts=[1,3,5].includes(i);let tg='';
+  if(tts){if(state.ativos.presidente)tg+='<span class="tg tts">Presidente</span>';if(state.ativos.depfed)tg+='<span class="tg tts">Dep. Federal</span>';}
+  if(mqs){if(state.ativos.governador)tg+='<span class="tg mqs">Governador</span>';if(state.ativos.senador)tg+='<span class="tg mqs">Senador</span>';if(state.ativos.depest)tg+='<span class="tg mqs">Dep. Estadual</span>';}
+  if(i===6)tg='<span style="color:var(--dim);font-size:11px">sem HGPE</span>';
+  cal+=`<div class="cd"><div class="dn">${d}</div>${tg}</div>`;
+ });
+ cal+=`</div></div>`;
+ document.getElementById('heroCal').innerHTML=cal;
+ // Tabs
+ let tabs='',panes='',memo=`═══ MEMORIAL — ${state.uf} · bancada ${state.ano} ═══\nBase legal: Lei 9.504/97 art. 47 §2º\nBancada total: ${Object.values(state.bancada).reduce((a,b)=>a+b,0)} dep.\n\n`;
+ ativos.forEach((k,ix)=>{
+  const r=calcCargo(k),v=CARGOS[k];
+  tabs+=`<div class="tab${ix===0?' on':''}" onclick="tabGo(${ix})">${v.ic} ${v.nm}</div>`;
+  let p=`<div class="tabpane${ix===0?' on':''}">`;
+  if(r.unidades.length===0){p+=`<div class="hint warn">Nenhuma chapa configurada para este cargo.</div></div>`;panes+=p;memo+=r.memo;return;}
+  const max=Math.max(...r.unidades.map(u=>u.tB));
+  const sorted=[...r.unidades].sort((a,b)=>b.tB-a.tB);
+  p+=`<div class="stat"><div class="s"><div class="v">${v.bolo}s</div><div class="l">Bolo por bloco</div></div>
+   <div class="s"><div class="v">${r.unidades.length}</div><div class="l">Unidades concorrentes</div></div>
+   <div class="s"><div class="v">${r.bancadaTotal}</div><div class="l">Bancada total</div></div>
+   <div class="s"><div class="v">${(INSERT_DIA[k]/60).toFixed(0)}min</div><div class="l">Inserções/dia (rádio+TV)</div></div></div>`;
+  p+=`<h3 style="font-size:14px;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)">Blocos</h3>`;
+  p+=`<table><thead><tr><th>Unidade</th><th>Tipo</th><th class="num">Bancada</th><th class="num">Por bloco</th><th class="num">Por dia (×4)</th><th class="num">Inserções/dia</th><th>Comparativo</th></tr></thead><tbody>`;
+  sorted.forEach(u=>{
+   const pct=(u.tB/max*100).toFixed(1);
+   p+=`<tr><td><b>${u.nome}</b></td><td>${u.tipo}</td><td class="num">${u.bancada}</td><td class="num">${fmtT(u.tB)}</td><td class="num">${fmtT(u.tD)}</td><td class="num">${fmtT(u.tIns)}</td><td style="min-width:160px"><div class="bar"><div style="width:${pct}%">${u.tB.toFixed(0)}s</div></div></td></tr>`;
+   if(u.partidos.length>1 && u.bancada>0){
+    u.partidos.forEach(pt=>{
+     const sh=(state.bancada[pt]||0)/u.bancada,ts=u.tB*sh;
+     p+=`<tr><td style="padding-left:28px;color:var(--mut)">↳ ${pt}</td><td style="color:var(--dim)">${state.bancada[pt]||0} dep</td><td class="num">${state.bancada[pt]||0}</td><td class="num">${fmtT(ts)}</td><td class="num">${fmtT(ts*4)}</td><td class="num">${fmtT(u.tIns*sh)}</td><td><div class="bar" style="height:12px"><div style="width:${(ts/max*100).toFixed(1)}%;opacity:.6;font-size:9px">${ts.toFixed(0)}s</div></div></td></tr>`;
     });
-    html+=`</tbody></table></div></div>`;
-    res.innerHTML+=html;
-    memoGeral+=r.memo+"\n";
+   }
   });
-
-  // Memorial
-  res.innerHTML+=`<div class="card"><h2>Memorial de cálculo</h2><div class="sub">Auditoria passo a passo.</div><div class="memo">${memoGeral.replace(/</g,'&lt;')}</div></div>`;
-  res.innerHTML+=`<div class="footer-note">AVM TempoCerto v2 · simulação preliminar · conferir sempre com a resolução do TSE vigente para o pleito.</div>`;
-  res.scrollIntoView({behavior:'smooth',block:'start'});
+  p+=`</tbody></table></div>`;panes+=p;memo+=r.memo;
+ });
+ document.getElementById('tabs').innerHTML=tabs;
+ document.getElementById('panes').innerHTML=panes;
+ memo+=`\n⚠ Observações:\n- Inserções: valores aproximados (70min rádio + 70min TV/dia, divididos por cargo conforme resolução TSE do pleito).\n- Tempo/dia assume 4 blocos efetivos; inserções avulsas podem variar.\n- Tempo por candidato individual NÃO é calculado: o HGPE distribui à legenda, e a partição interna é decisão política do partido/federação.`;
+ document.getElementById('memo').textContent=memo;
 }
+function tabGo(i){document.querySelectorAll('.tabs .tab').forEach((t,ix)=>t.classList.toggle('on',ix===i));document.querySelectorAll('.tabpane').forEach((t,ix)=>t.classList.toggle('on',ix===i));}
 
-function reset(){
-  state.chapas={presidente:[],governador:[],senador:[],depfed:[],depest:[]};
-  renderCargoConfig();
-  document.getElementById('resultado').innerHTML='';
-}
-
-/* =================== BOOT =================== */
-initUF();initCargos();initBench();
-// chapas iniciais: 2 por cargo ativo
-Object.keys(CARGOS).forEach(k=>{state.chapas[k]=[{id:Date.now()+Math.random(),partidos:[],federacoes:[]},{id:Date.now()+Math.random()+1,partidos:[],federacoes:[]}];});
-renderCargoConfig();
-</script>
-</body>
-</html>
+/* BOOT */
+initUF();initCargos();updBT();
+</script></body></html>
