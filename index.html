@@ -686,7 +686,8 @@ function renderApproxResult(){
  if(ch.partidos.length===0){document.getElementById('sc3Content').innerHTML='<div class="hint warn">Selecione ao menos um partido na sua chapa.</div>';return;}
  const suaBancada=ch.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0);
  const bt=bancadaTotal(),bolo=v.bolo;
- const tProp=bt>0?bolo*2/3*suaBancada/bt:0;
+ // Lei 9.504/97, art. 47, §2º (redação Lei 14.211/2021): 90% proporcional + 10% igualitário
+ const tProp=bt>0?bolo*0.9*suaBancada/bt:0;
  const dias=diasPorCargo(k);
  const tPropDia=tProp*4;
  const tPropCampanha=tPropDia*dias;
@@ -694,14 +695,14 @@ function renderApproxResult(){
 
  let h=`<div class="approx-header"><h2 class="title">${v.ic} ${v.nm} — Seu tempo</h2><span class="badge-approx">⚡ Tempo mínimo garantido</span></div>`;
  h+=`<div class="result-cards">`;
- h+=`<div class="r-card big"><div class="val gold">${fmtT(tProp)}</div><div class="lbl">Mínimo por bloco (2/3 proporcional)</div></div>`;
+ h+=`<div class="r-card big"><div class="val gold">${fmtT(tProp)}</div><div class="lbl">Mínimo por bloco (90% proporcional)</div></div>`;
  h+=`<div class="r-card"><div class="val">${fmtT(tPropDia)}</div><div class="lbl">Mínimo por dia (4 blocos)</div></div>`;
  h+=`<div class="r-card"><div class="val">${fmtT(tPropCampanha)}</div><div class="lbl">Campanha toda (${dias} dias)</div></div>`;
  h+=`<div class="r-card"><div class="val">${suaBancada}</div><div class="lbl">Bancada da sua chapa</div></div>`;
  h+=`<div class="r-card"><div class="val">${pct}%</div><div class="lbl">Do bolo de ${bolo}s</div></div>`;
  h+=`</div>`;
  h+=`<div class="approx-bar"><div style="width:${pct}%">${fmtT(tProp)}</div></div>`;
- h+=`<div class="hint gold" style="margin-top:16px">Este é o seu <b>tempo mínimo garantido</b> — a parte proporcional à bancada (2/3 do bolo). O tempo final será <b>maior</b>, pois inclui a parte igualitária (1/3 do bolo dividido entre todas as chapas que disputam).</div>`;
+ h+=`<div class="hint gold" style="margin-top:16px">Este é o seu <b>tempo mínimo garantido</b> — os 90% proporcionais à bancada (art. 47, §2º, Lei 9.504/97). O tempo final será <b>maior</b>, pois inclui os 10% igualitários (divididos entre todas as chapas que disputam).</div>`;
  h+=`<div class="bifurcation"><button class="btn lg" onclick="goStep(4)">Calcular com todas as chapas →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim (aproximado)</button></div>`;
  document.getElementById('sc3Content').innerHTML=h;
 }
@@ -779,9 +780,10 @@ function calcFull(){
   }
  });
  const n=unidades.length;if(n===0)return{unidades:[],bolo:cfg.bolo,memo:'Sem chapas.'};
- const bolo=cfg.bolo,um=bolo/3,dois=bolo*2/3,bt=unidades.reduce((a,u)=>a+u.bancada,0),pig=um/n;
- unidades.forEach(u=>{u.tIg=pig;u.tPr=bt>0?dois*u.bancada/bt:0;u.tB=u.tIg+u.tPr;u.tD=u.tB*4;u.tIns=INSERT_DIA[k]?(INSERT_DIA[k]/3/n)+(INSERT_DIA[k]*2/3*(bt>0?u.bancada/bt:0)):0;});
- let memo=`${cfg.nm.toUpperCase()} — ${bolo}s/bloco · ${n} unidades\n1/3=${um.toFixed(1)}s ÷ ${n} = ${pig.toFixed(1)}s/unid\n2/3=${dois.toFixed(1)}s prop. (bancada ${bt})\n`;
+ // Lei 9.504/97, art. 47, §2º (redação Lei 14.211/2021): 90% proporcional + 10% igualitário
+ const bolo=cfg.bolo,ig=bolo*0.1,prop=bolo*0.9,bt=unidades.reduce((a,u)=>a+u.bancada,0),pig=ig/n;
+ unidades.forEach(u=>{u.tIg=pig;u.tPr=bt>0?prop*u.bancada/bt:0;u.tB=u.tIg+u.tPr;u.tD=u.tB*4;u.tIns=INSERT_DIA[k]?(INSERT_DIA[k]*0.1/n)+(INSERT_DIA[k]*0.9*(bt>0?u.bancada/bt:0)):0;});
+ let memo=`${cfg.nm.toUpperCase()} — ${bolo}s/bloco · ${n} unidades\n10% ig = ${ig.toFixed(1)}s ÷ ${n} = ${pig.toFixed(1)}s/unid\n90% prop = ${prop.toFixed(1)}s (bancada ${bt})\n`;
  unidades.forEach(u=>{memo+=`${u.meu?'⭐ ':'  '}${u.nome} [${u.tipo}] b=${u.bancada} → ${u.tB.toFixed(1)}s/bloco\n`;});
  return{unidades,bolo,memo,parteIgual:pig,bancadaTotal:bt};
 }
@@ -822,7 +824,7 @@ function gerarInsights(k,r){
  const top3=sorted.slice(0,3).reduce((a,u)=>a+u.tB,0),pctTop3=(top3/bolo*100).toFixed(1);
  if(sorted.length>3)ins.push({ic:'📊',cls:'',txt:`As 3 maiores unidades concentram <b>${pctTop3}%</b> do bolo.`});
  const semBancada=r.unidades.filter(u=>u.bancada===0);
- if(semBancada.length>0)ins.push({ic:'⚠️',cls:'red',txt:`<b>${semBancada.length}</b> unidade(s) com bancada zero disputam só com o 1/3 igualitário.`});
+ if(semBancada.length>0)ins.push({ic:'⚠️',cls:'red',txt:`<b>${semBancada.length}</b> unidade(s) com bancada zero disputam só com os 10% igualitários.`});
  const meu=r.unidades.find(u=>u.meu);
  if(meu){const pos=sorted.findIndex(u=>u.meu)+1,dias=diasPorCargo(k);
   ins.push({ic:'⭐',cls:'gold',txt:`<b>${escapeHTML(meu.nome)}</b> está em <b>${pos}º/${sorted.length}</b>. Tem <b>${(meu.tB/bolo*100).toFixed(1)}%</b> do bolo. Campanha: <b>${fmtT(meu.tD*dias)}</b>.`});}
