@@ -277,6 +277,12 @@ details[open] summary{margin-bottom:10px}
 .m-card .m-sub-item{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;color:var(--mut)}
 .m-card .m-sub-item b{color:var(--txt)}
 
+/* ===== LOADING SPINNER ===== */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
+.loading-overlay .spinner{width:40px;height:40px;border:3px solid var(--line);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
+.loading-overlay .loading-text{color:var(--mut);font-size:14px;font-weight:600}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ===== TOAST ===== */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#000;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;z-index:200;animation:toastIn .3s,toastOut .3s 2.7s forwards;pointer-events:none}
 .toast.err{background:var(--err);color:#fff}
@@ -320,6 +326,8 @@ details[open] summary{margin-bottom:10px}
  .hint{background:#fafafa!important;border:1px solid #ddd!important;color:#000!important}
  tr.meu td{background:#fffbea!important;border-left:2px solid #ca8a04!important}
  .gcal-cell{cursor:default!important}.gcal-grid{page-break-inside:avoid}
+ .mobile-results{display:none!important}
+ table.result-table{display:table!important}
  .insights{page-break-inside:avoid}
  .insight{background:#f5f5f5!important;border:1px solid #ddd!important;color:#000!important}
 }
@@ -573,7 +581,7 @@ details[open] summary{margin-bottom:10px}
       <div class="logo">AVM</div>
       <h1>TempoCerto <span>v6 · Simulador HGPE</span></h1>
     </div>
-    <div class="user-bar"><b id="userName"></b><button onclick="doLogout()">Sair</button></div>
+    <div class="user-bar"><b id="userName" style="cursor:pointer" onclick="openProfile()" title="Editar perfil"></b><button onclick="openProfile()">Perfil</button><button onclick="doLogout()">Sair</button></div>
   </div>
   <div class="stepper">
     <div class="step on" data-step="0" onclick="goStep(0)"><div class="n">⌂</div><div class="t">Cenários<small>salvos e templates</small></div></div>
@@ -674,7 +682,7 @@ details[open] summary{margin-bottom:10px}
     <select id="cmpA" style="margin-bottom:14px"></select>
     <label>Cenário B</label>
     <select id="cmpB"></select>
-    <div class="hint" style="margin-top:14px">Selecione dois cenários diferentes. A comparação mostrará as diferenças de tempo por cargo e por unidade.</div>
+    <div id="cmpHint"></div>
   </div>
   <div class="modal-f"><button class="btn ghost" onclick="closeModal('mCompare')">Cancelar</button><button class="btn" onclick="doCompare()">Comparar</button></div>
 </div></div>
@@ -711,6 +719,31 @@ details[open] summary{margin-bottom:10px}
   </div>
   <div class="modal-f"><button class="btn ghost" onclick="closeModal('mSave')">Cancelar</button><button class="btn" onclick="doSave()">Salvar</button></div>
 </div></div>
+
+<!-- MODAL PERFIL -->
+<div class="modal" id="mProfile" role="dialog" aria-label="Editar perfil"><div class="modal-box" style="max-width:480px">
+  <div class="modal-h"><h3>Meu perfil</h3><button class="btn ghost sm" onclick="closeModal('mProfile')">✕</button></div>
+  <div class="modal-body">
+    <label>Nome</label><input type="text" id="profName" placeholder="Seu nome">
+    <label style="margin-top:12px">Telefone</label>
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:12px">
+      <input type="text" id="profDDD" placeholder="DDD" maxlength="2" style="text-align:center">
+      <input type="tel" id="profPhone" placeholder="99999-0000">
+    </div>
+    <label>Localização</label>
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:8px">
+      <select id="profUF" style="font-size:13px"><option value="">UF</option></select>
+      <input type="text" id="profCity" placeholder="Cidade">
+    </div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)">
+      <div>E-mail: <b id="profEmail" style="color:var(--txt)"></b></div>
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn ghost" onclick="closeModal('mProfile')">Cancelar</button><button class="btn" onclick="saveProfile()">Salvar</button></div>
+</div></div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Carregando cenários...</div></div>
 
 <!-- MODAL BANCADA -->
 <div class="modal" id="mBench" role="dialog" aria-label="Editar bancada"><div class="modal-box">
@@ -812,9 +845,12 @@ auth.onAuthStateChanged(async user=>{
   document.getElementById('appHeader').style.display='';
   document.getElementById('appMain').style.display='';
   document.getElementById('userName').textContent=user.displayName||user.email;
+  showLoading('Carregando seus cenários...');
   await loadScenariosFromFirestore();
+  hideLoading();
   renderHome();
  }else{
+  hideLoading();
   document.getElementById('authScreen').style.display='';
   document.getElementById('appHeader').style.display='none';
   document.getElementById('appMain').style.display='none';
@@ -1118,7 +1154,6 @@ function simular(){
   if(r.unidades.length===0){p+=`<div class="hint warn">Nenhuma chapa configurada para este cargo.</div></div>`;panes+=p;memo+=r.memo;return;}
   const max=Math.max(...r.unidades.map(u=>u.tB));
   const sorted=[...r.unidades].sort((a,b)=>{if(a.meu)return -1;if(b.meu)return 1;return b.tB-a.tB;});
-  const ranking=[...r.unidades].sort((a,b)=>b.tB-a.tB);
   p+=gerarInsights(k,r);
   p+=`<div class="stat"><div class="s"><div class="v">${v.bolo}s</div><div class="l">Bolo por bloco</div></div>
    <div class="s"><div class="v">${r.unidades.length}</div><div class="l">Unidades concorrentes</div></div>
@@ -1348,6 +1383,17 @@ function applySnapshot(d){d=migrateSnapshot(d);state.uf=d.uf;state.ano=d.ano;sta
 function updateScnUI(){document.getElementById('scNameInput').value=activeScn.nome;document.getElementById('scStat1').textContent=activeScn.saved?'✓ Salvo':'• Modificado';}
 function onScnNameChange(v){activeScn.nome=v;markDirty();}
 
+function scnPreview(s){
+ const d=s.data;if(!d||!d.chapas)return '';
+ const parts=[];
+ Object.keys(CARGOS).forEach(k=>{
+  if(!d.ativos||!d.ativos[k])return;
+  const chs=d.chapas[k];if(!chs||!chs.length)return;
+  const n=CARGOS[k].semcol?chs.filter(c=>c.ativo!==false).length:chs.length;
+  if(n>0)parts.push(`${CARGOS[k].ic} ${n}`);
+ });
+ return parts.length?`<div style="font-size:11px;color:var(--mut);margin-bottom:8px">${parts.join(' · ')}</div>`:'';
+}
 function renderHome(){
  const grid=document.getElementById('homeGrid');grid.innerHTML='';
  const newC=document.createElement('div');newC.className='scn-card new';newC.innerHTML=`<div class="plus">+</div><div style="font-weight:700">Novo cenário em branco</div><div style="font-size:11px;color:var(--mut)">Configurar do zero</div>`;
@@ -1356,8 +1402,9 @@ function renderHome(){
  all.forEach(s=>{
   const c=document.createElement('div');c.className='scn-card';
   const dateStr=s.updatedAt?new Date(s.updatedAt.seconds?s.updatedAt.seconds*1000:s.updatedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+  const preview=scnPreview(s);
   c.innerHTML=`${s.template?'<span class="badge">TEMPLATE</span>':''}<div class="nm">${escapeHTML(s.nome)}</div><div class="meta">${s.data.uf} · ${s.escopo==='cargo'?'1 cargo':Object.values(s.data.ativos).filter(Boolean).length+' cargos'}${dateStr?' · '+dateStr:''}</div>
-   <div class="tags"><span class="tg">${s.data.uf}</span><span class="tg">bancada ${s.data.ano}</span>${s.template?'<span class="tg" style="color:#FACC15">exemplo</span>':''}</div>
+   ${preview}<div class="tags"><span class="tg">${s.data.uf}</span><span class="tg">bancada ${s.data.ano}</span>${s.template?'<span class="tg" style="color:#FACC15">exemplo</span>':''}</div>
    <div class="acts"><button onclick="event.stopPropagation();loadScn('${s.id}',1)">Editar</button><button onclick="event.stopPropagation();loadScn('${s.id}',3)">Resultado</button><button onclick="event.stopPropagation();dupScn('${s.id}')">Duplicar</button>${!s.template?`<button onclick="event.stopPropagation();expScn('${s.id}')">Exportar</button><button class="del" onclick="event.stopPropagation();delScn('${s.id}')">Excluir</button>`:''}</div>`;
   c.onclick=()=>loadScn(s.id,3);grid.appendChild(c);
  });
@@ -1369,7 +1416,7 @@ function newScenario(){activeScn={id:null,nome:'Cenário sem nome',escopo:'compl
  document.querySelectorAll('.cargo-card').forEach(c=>c.classList.add('on'));updBT();updateScnUI();}
 function findScn(id){return TEMPLATES.find(s=>s.id===id)||loadStore().find(s=>s.id===id);}
 function loadScn(id,goTo){const s=findScn(id);if(!s)return;applySnapshot(s.data);activeScn={id:s.template?null:s.id,nome:s.template?s.nome+' (cópia)':s.nome,escopo:s.escopo,cargo:s.cargo,saved:!s.template};isDirty=false;updateScnUI();goStep(goTo||1);}
-function dupScn(id){const s=findScn(id);if(!s)return;const novo={...JSON.parse(JSON.stringify(s)),id:'scn-'+Date.now(),nome:s.nome+' (cópia)',template:false,updatedAt:new Date().toISOString()};const arr=loadStore();arr.push(novo);saveStore(arr);saveScenarioToFirestore(novo);renderHome();}
+async function dupScn(id){const s=findScn(id);if(!s)return;const novo={...JSON.parse(JSON.stringify(s)),id:'scn-'+Date.now(),nome:s.nome+' (cópia)',template:false,updatedAt:new Date().toISOString()};const arr=loadStore();arr.push(novo);saveStore(arr);await saveScenarioToFirestore(novo);renderHome();showToast('Cenário duplicado');}
 async function delScn(id){if(!confirm('Excluir este cenário?'))return;saveStore(loadStore().filter(s=>s.id!==id));await deleteScenarioFromFirestore(id);renderHome();showToast('Cenário excluído');}
 function expScn(id){const s=findScn(id);if(!s)return;const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.nome||'cenario').replace(/\s+/g,'_')+'.json';a.click();}
 function validateScenario(s){
@@ -1431,10 +1478,19 @@ function calcCargoFrom(k,data){
 }
 function openCompare(){
  const all=[...TEMPLATES,...loadStore()];
+ const saved=loadStore();
  if(all.length<2){showToast('Salve pelo menos 2 cenários para comparar.','err');return;}
  const selA=document.getElementById('cmpA'),selB=document.getElementById('cmpB');selA.innerHTML='';selB.innerHTML='';
- all.forEach(s=>{const opt=`<option value="${s.id}">${escapeHTML(s.nome)} (${s.data.uf})</option>`;selA.innerHTML+=opt;selB.innerHTML+=opt;});
- if(all.length>1)selB.selectedIndex=1;openModal('mCompare');
+ all.forEach(s=>{const label=`${escapeHTML(s.nome)} (${s.data.uf})${s.template?' [template]':''}`;const opt=`<option value="${s.id}">${label}</option>`;selA.innerHTML+=opt;selB.innerHTML+=opt;});
+ if(all.length>1)selB.selectedIndex=1;
+ // Hint contextual
+ const hintEl=document.getElementById('cmpHint');
+ if(hintEl){
+  if(saved.length===0)hintEl.innerHTML='<div class="hint warn" style="margin-top:10px">Você ainda não salvou nenhum cenário próprio. Os templates acima são exemplos — salve seus cenários para comparações mais úteis.</div>';
+  else if(saved.length===1)hintEl.innerHTML='<div class="hint" style="margin-top:10px">Você tem 1 cenário salvo. Salve mais cenários com configurações diferentes para comparar resultados.</div>';
+  else hintEl.innerHTML='';
+ }
+ openModal('mCompare');
 }
 function doCompare(){
  const idA=document.getElementById('cmpA').value,idB=document.getElementById('cmpB').value;
@@ -1472,6 +1528,45 @@ function renderComparativo(sA,sB){
 /* ========== DIRTY STATE ========== */
 function markDirty(){isDirty=true;if(activeScn.saved){activeScn.saved=false;updateScnUI();}}
 window.addEventListener('beforeunload',e=>{if(isDirty&&!activeScn.saved){e.preventDefault();e.returnValue='';}});
+
+/* ========== LOADING ========== */
+function showLoading(msg){const o=document.getElementById('loadingOverlay');if(o){o.style.display='flex';o.querySelector('.loading-text').textContent=msg||'Carregando...';}}
+function hideLoading(){const o=document.getElementById('loadingOverlay');if(o)o.style.display='none';}
+
+/* ========== PERFIL ========== */
+async function openProfile(){
+ if(!currentUser)return;
+ // Load profile from Firestore
+ try{
+  const doc=await db.collection('users').doc(currentUser.uid).get();
+  const p=doc.exists?doc.data():{};
+  document.getElementById('profName').value=p.nome||currentUser.displayName||'';
+  document.getElementById('profDDD').value=p.ddd||'';
+  document.getElementById('profPhone').value=p.phone||'';
+  document.getElementById('profUF').value=p.uf||'';
+  document.getElementById('profCity').value=p.city||'';
+  document.getElementById('profEmail').textContent=currentUser.email||'';
+ }catch(e){console.error('Profile load error:',e);}
+ // Populate UF select
+ const sel=document.getElementById('profUF');
+ if(sel.options.length<=1){UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});}
+ openModal('mProfile');
+}
+async function saveProfile(){
+ if(!currentUser)return;
+ const nome=document.getElementById('profName').value.trim();
+ const ddd=document.getElementById('profDDD').value.trim();
+ const phone=document.getElementById('profPhone').value.trim();
+ const uf=document.getElementById('profUF').value;
+ const city=document.getElementById('profCity').value.trim();
+ if(!nome){showToast('Preencha o nome','err');return;}
+ try{
+  await currentUser.updateProfile({displayName:nome});
+  await db.collection('users').doc(currentUser.uid).set({nome,ddd,phone,uf,city,email:currentUser.email},{merge:true});
+  document.getElementById('userName').textContent=nome;
+  closeModal('mProfile');showToast('Perfil atualizado');
+ }catch(e){console.error('Profile save error:',e);showToast('Erro ao salvar perfil','err');}
+}
 
 /* ========== BOOT ========== */
 initUF();initCargos();updBT();updateScnUI();
