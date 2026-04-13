@@ -384,12 +384,13 @@ details[open] summary{margin-bottom:10px}
  .canvas-head>div:last-child{display:flex;gap:4px;flex-wrap:wrap}
  .canvas-head .btn{font-size:10px;padding:6px 10px}
 
- /* Chapa */
- .chapa{padding:8px}
- .chapa-h{flex-direction:column;gap:6px;align-items:stretch}
- .chapa-h .tt{min-width:0!important;flex-direction:column!important;gap:4px!important}
+ /* Chapa — keep horizontal flow, just smaller */
+ .chapa{padding:10px}
+ .chapa-h{flex-wrap:wrap;gap:6px}
+ .chapa-h .tt{flex-direction:row!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;min-width:0!important}
  .chapa-h .tt span{font-size:11px}
- .chapa-h .tt input{font-size:12px!important;padding:5px 8px!important;width:100%!important}
+ .chapa-h .tt input{font-size:12px!important;padding:5px 8px!important;flex:1 1 150px!important;min-width:0!important}
+ .chapa-h .tt .tag{font-size:9px}
  .chapa-h>div:last-child{display:flex;gap:4px}
  .chapa-h .btn{font-size:10px;padding:5px 8px}
 
@@ -452,18 +453,18 @@ details[open] summary{margin-bottom:10px}
  .cal .cd .dn{font-size:11px;margin-bottom:2px}
  .cal .cd .tg{font-size:7px;padding:1px 3px;margin-top:2px}
 
- /* Google Calendar — scrollable wrapper */
- .gcal{padding:10px;overflow:visible}
- .gcal-grid{min-width:500px}
+ /* Google Calendar — horizontally scrollable */
+ .gcal{padding:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .gcal-grid{min-width:520px}
+ .gcal-head{flex-wrap:wrap;gap:6px}
  .gcal-head .month{font-size:14px}
  .gcal-head .navs button{padding:4px 8px;font-size:11px}
- .gcal-cell{min-height:48px;padding:3px;font-size:8px}
+ .gcal-cell{min-height:44px;padding:2px;font-size:8px}
  .gcal-daynum{font-size:10px}
  .gcal-evt{font-size:7px;padding:1px 2px}
- .gcal-legend{font-size:9px;gap:8px}
- .gcal-dow{padding:4px 2px;font-size:9px}
- /* Wrap gcal in scrollable container */
- #gcal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -10px;padding:0 10px}
+ .gcal-legend{font-size:9px;gap:6px;flex-wrap:wrap}
+ .gcal-dow{padding:3px 2px;font-size:8px}
+ #gcal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
  /* Tabs */
  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
