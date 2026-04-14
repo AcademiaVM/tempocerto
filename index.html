@@ -851,8 +851,9 @@ function renderRivals(){
 function initPropAdv(){
  if(state.chapasAdversarias.length>0)return;
  const myParts=new Set(state.minhaChapa.partidos);const fedParts=Object.values(FED).flat();
- Object.entries(FED).forEach(([fn,parts])=>{if(!parts.some(p=>myParts.has(p))){state.chapasAdversarias.push({partidos:[...parts],federacoes:[fn],nome:fn,ativo:true});}});
- PARTIDOS.filter(p=>!myParts.has(p.s)&&!fedParts.includes(p.s)).forEach(p=>{state.chapasAdversarias.push({partidos:[p.s],federacoes:[],nome:p.s,ativo:true});});
+ // Só incluir partidos/federações COM cláusula de desempenho
+ Object.entries(FED).forEach(([fn,parts])=>{if(!parts.some(p=>myParts.has(p))&&parts.some(p=>temClausula(p))){state.chapasAdversarias.push({partidos:[...parts],federacoes:[fn],nome:fn,ativo:true});}});
+ PARTIDOS.filter(p=>!myParts.has(p.s)&&!fedParts.includes(p.s)&&p.cl).forEach(p=>{state.chapasAdversarias.push({partidos:[p.s],federacoes:[],nome:p.s,ativo:true});});
 }
 function togAdvProp(i){state.chapasAdversarias[i].ativo=state.chapasAdversarias[i].ativo===false;renderRivals();}
 function propAdvAll(v){state.chapasAdversarias.forEach(c=>c.ativo=v);renderRivals();}
@@ -869,7 +870,7 @@ function renderRivalChapa(ch,idx){
  Object.keys(FED).forEach(fn=>{const on=ch.federacoes.includes(fn),dis=fedsUsadas.has(fn)&&!on;h+=`<div class="fed-chip${on?' on':''}" style="${dis?'opacity:.25':''}" onclick="${dis?'':`togRivalFed(${idx},'${fn}')`}"><b>${fn}</b><small>${FED[fn].join('+')}</small></div>`;});
  h+=`</div><label>Partidos</label><div class="part-grid">`;
  PARTIDOS.forEach(p=>{const on=ch.partidos.includes(p.s),emFed=fedParts.includes(p.s),dis=(usados.has(p.s)&&!on)||emFed;
-  h+=`<div class="part${on?' on':''}${dis?' dis':''}${emFed?' fed':''}" onclick="${dis?'':`togRivalPart(${idx},'${p.s}')`}"><b>${p.s}</b><span class="bn">${state.bancada[p.s]||0}</span></div>`;});
+  h+=`<div class="part${on?' on':''}${dis?' dis':''}${emFed?' fed':''}" onclick="${dis?'':`togRivalPart(${idx},'${p.s}')`}"><b>${p.s}</b></div>`;});
  h+=`</div></div>`;return h;
 }
 function togRivalFed(idx,fn){const ch=state.chapasAdversarias[idx];if(ch.federacoes.includes(fn)){ch.federacoes=ch.federacoes.filter(x=>x!==fn);ch.partidos=ch.partidos.filter(p=>!FED[fn].includes(p));}else{ch.federacoes.push(fn);FED[fn].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});}isDirty=true;renderRivals();}
