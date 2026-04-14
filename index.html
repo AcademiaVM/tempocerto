@@ -382,50 +382,38 @@ body>*{position:relative;z-index:1}
   <h2>Criar novo cenário</h2>
   <p>Descubra quanto tempo de TV e rádio a sua chapa vai ter</p>
  </div>
+ <div id="homeWeek"></div>
  <div class="home-saved" id="homeSaved"></div>
 </div>
 
 <!-- sc1: TIPO DE ELEICAO -->
 <div class="screen" id="sc1">
  <h2 class="title">Novo cenário</h2>
- <p class="lead">Escolha o tipo de eleição que deseja simular.</p>
- <input type="text" id="scName" placeholder="Nome do cenário (ex: SP Governador 2026)" style="margin-bottom:20px;font-size:16px;padding:14px 18px">
+ <p class="lead">Escolha o tipo de eleição e o cargo que deseja simular.</p>
+ <input type="text" id="scName" placeholder="Dê um nome ao cenário (ex: Governo SP 2026)" style="margin-bottom:20px;font-size:16px;padding:14px 18px">
  <div class="type-grid">
   <div class="type-card" id="tcMaj" onclick="selectType('majoritario')">
    <div class="ic">🏛</div>
    <h3>Majoritária</h3>
-   <p>Chapas de partidos coligados disputando juntos</p>
-   <div class="cargos"><span>Presidente</span><span>Governador</span><span>Senador</span></div>
+   <p>Uma chapa de partidos disputando juntos</p>
   </div>
   <div class="type-card" id="tcProp" onclick="selectType('proporcional')">
    <div class="ic">🏢</div>
    <h3>Proporcional</h3>
-   <p>Cada partido ou federação disputa individualmente</p>
-   <div class="cargos"><span>Dep. Federal</span><span>Dep. Estadual</span></div>
+   <p>Cada partido disputa individualmente</p>
   </div>
  </div>
- <div class="cargo-sel" id="cargoSel" style="display:none">
-  <label>Cargo específico</label>
-  <select id="cargoEscolhido" onchange="state.cargo=this.value"></select>
- </div>
- <details class="config-extra">
-  <summary>⚙ Configurações avançadas (UF, bancada)</summary>
-  <div style="padding:16px 0">
-   <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:end">
-    <div><label>UF</label><select id="uf" onchange="state.uf=this.value"></select></div>
-    <div><label>Bancada</label><div style="display:flex;align-items:center;gap:8px"><span id="bt" style="font-weight:800;font-size:16px">513</span> deputados <button class="btn ghost sm" onclick="openBench()">Editar</button></div></div>
-   </div>
-  </div>
- </details>
+ <div id="cargoButtons" style="display:none"></div>
  <div class="nav-foot"><button class="btn ghost" onclick="goStep(0)">← Voltar</button><button class="btn lg" id="btnNext1" onclick="goStep(2)" style="display:none">Montar minha chapa →</button></div>
 </div>
+<div id="uf" style="display:none"></div><span id="bt" style="display:none">513</span>
 
 <!-- sc2: MONTAR SUA CHAPA -->
 <div class="screen" id="sc2">
- <h2 class="title" id="sc2Title">Monte a chapa do seu candidato</h2>
- <p class="lead" id="sc2Lead">Selecione os partidos e federações que compõem a coligação.</p>
+ <h2 class="title" id="sc2Title">Monte a sua chapa</h2>
+ <p class="lead" id="sc2Lead">Selecione os partidos que compõem a sua coligação.</p>
  <div id="sc2Content"></div>
- <div class="nav-foot"><button class="btn ghost" onclick="goStep(1)">← Voltar</button><button class="btn lg" onclick="goStep(3)">Ver meu tempo →</button></div>
+ <div class="nav-foot"><button class="btn ghost" onclick="goStep(1)">← Voltar</button><button class="btn lg" onclick="goStep(3)">Ver meu tempo de TV e rádio →</button></div>
 </div>
 
 <!-- sc3: RESULTADO APROXIMADO -->
@@ -442,10 +430,10 @@ body>*{position:relative;z-index:1}
 
 <!-- sc4: MONTAR ADVERSARIAS -->
 <div class="screen" id="sc4">
- <h2 class="title">Montar chapas adversárias</h2>
- <p class="lead" id="sc4Lead">Monte as chapas dos adversários para calcular a distribuição completa de tempo.</p>
+ <h2 class="title" id="sc4Title">Defina os concorrentes</h2>
+ <p class="lead" id="sc4Lead">Para um resultado mais preciso, informe quem mais disputa essa eleição.</p>
  <div id="sc4Content"></div>
- <div class="nav-foot"><button class="btn ghost" onclick="goStep(3)">← Voltar</button><button class="btn lg" onclick="goStep(5)">Calcular resultado completo →</button></div>
+ <div class="nav-foot"><button class="btn ghost" onclick="goStep(3)">← Voltar</button><button class="btn lg" onclick="goStep(5)">Ver resultado completo →</button></div>
 </div>
 
 <!-- sc5: RESULTADO COMPLETO -->
@@ -612,15 +600,16 @@ function goStep(n){
 
 /* ========== sc0: HOME ========== */
 function renderHome(){
+ // Semana-tipo na home
+ document.getElementById('homeWeek').innerHTML=renderWeekType();
  const wrap=document.getElementById('homeSaved');wrap.innerHTML='';
  const all=loadStore();
- if(all.length===0){wrap.innerHTML='<div style="text-align:center;color:var(--mut);padding:20px;font-size:13px">Nenhum cenário salvo ainda. Crie o primeiro!</div>';return;}
- let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)">Cenários salvos</h3><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="openCompare()">⚖ Comparar</button><button class="btn ghost sm" onclick="document.getElementById(\'fImp\').click()">📥 Importar</button><input type="file" id="fImp" accept=".json" style="display:none" onchange="impFile(event)"></div></div><div class="home-grid">';
+ if(all.length===0)return;
+ let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)">Seus cenários salvos</h3><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="openCompare()">⚖ Comparar</button><button class="btn ghost sm" onclick="document.getElementById(\'fImp\').click()">📥 Importar</button><input type="file" id="fImp" accept=".json" style="display:none" onchange="impFile(event)"></div></div><div class="home-grid">';
  all.forEach(s=>{
   const dateStr=s.updatedAt?new Date(s.updatedAt.seconds?s.updatedAt.seconds*1000:s.updatedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
   const cargoNm=s.cargo&&CARGOS[s.cargo]?CARGOS[s.cargo].nm:'';
-  const typeNm=s.type==='majoritario'?'Majoritária':s.type==='proporcional'?'Proporcional':'';
-  h+=`<div class="scn-card" onclick="loadScn('${s.id}')"><div class="nm">${escapeHTML(s.nome||'Sem nome')}</div><div class="meta">${typeNm}${cargoNm?' · '+cargoNm:''}${s.data?.uf?' · '+s.data.uf:''}${dateStr?' · '+dateStr:''}</div>
+  h+=`<div class="scn-card" onclick="loadScn('${s.id}')"><div class="nm">${escapeHTML(s.nome||'Sem nome')}</div><div class="meta">${cargoNm}${dateStr?' · '+dateStr:''}</div>
   <div class="acts"><button onclick="event.stopPropagation();loadScn('${s.id}','edit')">Editar</button><button onclick="event.stopPropagation();loadScn('${s.id}','result')">Resultado</button><button onclick="event.stopPropagation();expScn('${s.id}')">Exportar</button><button class="del" onclick="event.stopPropagation();delScn('${s.id}')">Excluir</button></div></div>`;
  });
  h+='</div>';wrap.innerHTML=h;
@@ -628,69 +617,66 @@ function renderHome(){
 
 /* ========== sc1: TYPE CHOICE ========== */
 function selectType(t){
- state.type=t;
+ state.type=t;state.cargo=null;
  document.getElementById('tcMaj').classList.toggle('on',t==='majoritario');
  document.getElementById('tcProp').classList.toggle('on',t==='proporcional');
- const sel=document.getElementById('cargoEscolhido');sel.innerHTML='';
- if(t==='majoritario'){
-  [{v:'governador',n:'Governador (600s · Seg/Qua/Sex)'},{v:'presidente',n:'Presidente (750s · Ter/Qui/Sáb)'},{v:'senador',n:'Senador (300s · Seg/Qua/Sex)'}].forEach(c=>{sel.innerHTML+=`<option value="${c.v}">${c.n}</option>`;});
-  state.cargo='governador';
- }else{
-  [{v:'depfed',n:'Deputado Federal (750s · Ter/Qui/Sáb)'},{v:'depest',n:'Deputado Estadual (600s · Seg/Qua/Sex)'}].forEach(c=>{sel.innerHTML+=`<option value="${c.v}">${c.n}</option>`;});
-  state.cargo='depfed';
- }
- document.getElementById('cargoSel').style.display='';
+ document.getElementById('btnNext1').style.display='none';
+ const wrap=document.getElementById('cargoButtons');wrap.style.display='';
+ const cargos=t==='majoritario'?[{v:'governador',nm:'Governador',ic:'🏛'},{v:'presidente',nm:'Presidente',ic:'🇧🇷'},{v:'senador',nm:'Senador',ic:'⚖'}]:[{v:'depfed',nm:'Deputado Federal',ic:'🏢'},{v:'depest',nm:'Deputado Estadual',ic:'🏬'}];
+ let h='<p style="color:var(--mut);font-size:13px;margin-bottom:12px">Selecione o cargo:</p><div style="display:flex;gap:10px;flex-wrap:wrap">';
+ cargos.forEach(c=>{h+=`<div class="type-card" style="flex:1;min-width:140px;padding:16px;cursor:pointer" onclick="selectCargo('${c.v}')" id="cb_${c.v}"><div style="font-size:24px;margin-bottom:6px">${c.ic}</div><div style="font-size:15px;font-weight:800;font-family:'Sora',sans-serif">${c.nm}</div></div>`;});
+ h+='</div>';wrap.innerHTML=h;isDirty=true;
+}
+function selectCargo(v){
+ state.cargo=v;
+ document.querySelectorAll('#cargoButtons .type-card').forEach(el=>el.classList.remove('on'));
+ document.getElementById('cb_'+v).classList.add('on');
  document.getElementById('btnNext1').style.display='';
- isDirty=true;
 }
 
 /* ========== sc2: MY CHAPA ========== */
+function getFedTag(sigla){for(const[fn,parts]of Object.entries(FED)){if(parts.includes(sigla))return fn;}return null;}
 function renderMyChapa(){
  const k=state.cargo,v=CARGOS[k],c=document.getElementById('sc2Content');
- if(state.type==='majoritario'){
+ const isProp=CARGOS[k].semcol;
+ if(!isProp){
   document.getElementById('sc2Title').textContent='Monte a chapa do seu candidato';
-  document.getElementById('sc2Lead').textContent=`${v.ic} ${v.nm} — ${v.bolo}s por bloco. Selecione os partidos e federações da coligação.`;
+  document.getElementById('sc2Lead').textContent='Selecione os partidos que fazem parte da sua coligação.';
   const ch=state.minhaChapa;
-  const fedParts=ch.federacoes.flatMap(f=>FED[f]);
-  let h=`<div class="chapa-builder"><h3>Sua coligação</h3>`;
-  h+=`<label>Federações (opcional — entram como bloco único)</label><div class="fed-list">`;
-  Object.keys(FED).forEach(fn=>{const on=ch.federacoes.includes(fn);
-   h+=`<div class="fed-chip${on?' on':''}" onclick="togMyFed('${fn}')"><b>${fn}</b><small>${FED[fn].join(' + ')}</small></div>`;});
-  h+=`</div><label>Partidos</label><input type="text" placeholder="Buscar sigla..." oninput="this.dataset.q=this.value;renderMyChapa()" style="margin-bottom:8px" id="mySearch">`;
+  let h=`<div class="chapa-builder"><h3>Selecione os partidos da coligação</h3>`;
+  h+=`<input type="text" placeholder="Buscar partido..." oninput="this.dataset.q=this.value;renderMyChapa()" style="margin-bottom:10px" id="mySearch">`;
   h+=`<div class="part-grid">`;
   const q=(document.getElementById('mySearch')?.dataset?.q||'').toLowerCase();
   PARTIDOS.filter(p=>!q||p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).forEach(p=>{
-   const on=ch.partidos.includes(p.s),emFed=fedParts.includes(p.s);
-   h+=`<div class="part${on?' on':''}${emFed?' fed':''}" onclick="${emFed?'':`togMyPart('${p.s}')`}"><b>${p.s}</b><span class="bn">${state.bancada[p.s]||0}</span></div>`;
+   const on=ch.partidos.includes(p.s);
+   const fed=getFedTag(p.s);
+   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')"><b>${p.s}</b>${fed?'<span style="font-size:8px;color:var(--gold);margin-left:4px">'+fed+'</span>':''}</div>`;
   });
-  h+=`</div><div class="bancada-total"><span>Bancada da sua chapa</span><span class="val">${ch.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0)}</span></div></div>`;
+  h+=`</div></div>`;
   c.innerHTML=h;
  }else{
   document.getElementById('sc2Title').textContent='Qual é o partido do seu candidato?';
-  document.getElementById('sc2Lead').textContent=`${v.ic} ${v.nm} — ${v.bolo}s por bloco. Selecione o partido ou federação.`;
-  let h='<input type="text" placeholder="Buscar sigla..." oninput="filterPartyPicker(this.value)" style="margin-bottom:16px">';
+  document.getElementById('sc2Lead').textContent='Selecione o partido ou federação do seu candidato.';
+  let h='<input type="text" placeholder="Buscar partido..." oninput="filterPartyPicker(this.value)" style="margin-bottom:16px">';
   h+='<div class="party-picker" id="partyPicker">';
-  const comBancada=PARTIDOS.filter(p=>p.b>0),semBancada=PARTIDOS.filter(p=>p.b===0);
-  // Federações primeiro
-  Object.entries(FED).forEach(([fn,parts])=>{
-   const banc=parts.reduce((a,p)=>a+(state.bancada[p]||0),0);
-   const on=state.minhaChapa.federacoes.includes(fn);
-   h+=`<div class="party-pick fed${on?' on':''}" onclick="pickMyParty('${fn}',true)"><div class="sig">${fn.split('/')[0]}</div><div class="info"><b>${fn}</b>${parts.join(' + ')}</div><div class="banc">${banc}</div></div>`;
+  PARTIDOS.forEach(p=>{
+   const on=state.minhaChapa.partidos.includes(p.s);
+   const fed=getFedTag(p.s);
+   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;margin-left:6px">'+fed+'</span>':''}</div></div>`;
   });
-  comBancada.filter(p=>!Object.values(FED).flat().includes(p.s)).forEach(p=>{
-   const on=state.minhaChapa.partidos.includes(p.s)&&state.minhaChapa.federacoes.length===0;
-   h+=`<div class="party-pick${on?' on':''}" onclick="pickMyParty('${p.s}',false)"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b></div><div class="banc">${p.b}</div></div>`;
-  });
-  if(semBancada.length>0){
-   h+=`</div><details style="margin-top:12px"><summary>${semBancada.length} partidos sem bancada</summary><div class="party-picker" style="margin-top:8px">`;
-   semBancada.filter(p=>!Object.values(FED).flat().includes(p.s)).forEach(p=>{
-    const on=state.minhaChapa.partidos.includes(p.s);
-    h+=`<div class="party-pick${on?' on':''}" onclick="pickMyParty('${p.s}',false)"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b></div><div class="banc">0</div></div>`;
-   });
-   h+=`</div></details>`;
-  }else h+=`</div>`;
+  h+='</div>';
   c.innerHTML=h;
  }
+}
+function togMyPartV2(s){
+ const ch=state.minhaChapa;
+ if(ch.partidos.includes(s)){ch.partidos=ch.partidos.filter(x=>x!==s);ch.federacoes=ch.federacoes.filter(fn=>!FED[fn]||FED[fn].some(p=>ch.partidos.includes(p)));}
+ else{ch.partidos.push(s);
+  // Auto-add federation members
+  const fed=getFedTag(s);
+  if(fed&&!ch.federacoes.includes(fed)){ch.federacoes.push(fed);FED[fed].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});}
+ }
+ isDirty=true;renderMyChapa();
 }
 function togMyFed(fn){const ch=state.minhaChapa;if(ch.federacoes.includes(fn)){ch.federacoes=ch.federacoes.filter(x=>x!==fn);ch.partidos=ch.partidos.filter(p=>!FED[fn].includes(p));}else{ch.federacoes.push(fn);FED[fn].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});}isDirty=true;renderMyChapa();}
 function togMyPart(s){const ch=state.minhaChapa;if(ch.partidos.includes(s))ch.partidos=ch.partidos.filter(x=>x!==s);else ch.partidos.push(s);isDirty=true;renderMyChapa();}
@@ -705,69 +691,87 @@ function filterPartyPicker(q){document.querySelectorAll('.party-pick').forEach(e
 /* ========== sc3: RESULTADO APROXIMADO ========== */
 function renderApproxResult(){
  const k=state.cargo,v=CARGOS[k],ch=state.minhaChapa;
- if(ch.partidos.length===0){document.getElementById('sc3Content').innerHTML='<div class="hint warn">Selecione ao menos um partido na sua chapa.</div>';return;}
+ if(!ch||ch.partidos.length===0){document.getElementById('sc3Content').innerHTML='<div class="hint warn">Selecione ao menos um partido.</div>';return;}
  const suaBancada=ch.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0);
  const bt=bancadaTotal(),bolo=v.bolo;
- // Lei 9.504/97, art. 47, §2º (redação Lei 14.211/2021): 90% proporcional + 10% igualitário
  const tProp=bt>0?bolo*0.9*suaBancada/bt:0;
  const dias=diasPorCargo(k);
  const tPropDia=tProp*4;
  const tPropCampanha=tPropDia*dias;
- const pct=(tProp/bolo*100).toFixed(1);
- // Inserções (90% proporcional do bolo de inserções diário)
  const insTotal=INSERT_DIA[k]||0;
  const insProp=bt>0?insTotal*0.9*suaBancada/bt:0;
+ const insPropDia=insProp;
+ const insPropPeriodo=insProp*dias;
+ const numInsercoes=Math.floor(insPropPeriodo/30);
+ const numProgramas=dias*4;
+ const cargoNome=k==='governador'?'Governo':k==='presidente'?'Presidência':k==='senador'?'Senado':k==='depfed'?'Deputado Federal':'Deputado Estadual';
+ const isProp=CARGOS[k].semcol;
 
- let h=`<div class="approx-header"><h2 class="title">${v.ic} ${v.nm} — Seu tempo</h2><span class="badge-approx">⚡ Tempo mínimo garantido</span></div>`;
- h+=`<div class="result-cards">`;
- h+=`<div class="r-card big"><div class="val gold has-tip" data-tip="Bolo total: ${bolo}s\n90% proporcional = ${(bolo*0.9).toFixed(0)}s\nSua bancada: ${suaBancada} de ${bt}\nCálculo: ${(bolo*0.9).toFixed(0)}s × ${suaBancada}/${bt} = ${tProp.toFixed(1)}s">${fmtT(tProp)}</div><div class="lbl">Mínimo por bloco (90% proporcional)</div></div>`;
- h+=`<div class="r-card"><div class="val has-tip" data-tip="4 blocos/dia:\n2 rádio (7h e 12h)\n2 TV (13h e 20h30)\n${fmtT(tProp)} × 4 = ${fmtT(tPropDia)}">${fmtT(tPropDia)}</div><div class="lbl">Mínimo por dia (4 blocos)</div></div>`;
- h+=`<div class="r-card"><div class="val has-tip" data-tip="${dias} dias de exibição\n(${v.dias==='tts'?'Ter/Qui/Sáb':'Seg/Qua/Sex'})\n${fmtT(tPropDia)} × ${dias} = ${fmtT(tPropCampanha)}">${fmtT(tPropCampanha)}</div><div class="lbl">Campanha toda (${dias} dias)</div></div>`;
- h+=`<div class="r-card"><div class="val has-tip" data-tip="Inserções diárias totais: ${fmtT(insTotal)}\n90% prop = ${fmtT(insTotal*0.9)}\nSua parte: ${fmtT(insProp)}\n(30s e 60s ao longo da programação)">${fmtT(insProp)}</div><div class="lbl">Inserções/dia (mínimo)</div></div>`;
- h+=`<div class="r-card"><div class="val">${suaBancada}</div><div class="lbl">Bancada da chapa (de ${bt})</div></div>`;
- h+=`<div class="r-card"><div class="val">${pct}%</div><div class="lbl">Do bolo de ${bolo}s</div></div>`;
+ let h=`<div style="text-align:center;margin-bottom:24px">`;
+ h+=`<h2 class="title">Confira o seu tempo de Rádio e TV</h2>`;
+ h+=`<div style="color:var(--mut);font-size:14px;margin-top:4px">1º Turno</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;font-family:'Sora',sans-serif;margin-top:4px">${cargoNome} 2026</div>`;
+ h+=`<span class="badge-approx" style="margin-top:10px;display:inline-block">Tempo mínimo garantido</span>`;
  h+=`</div>`;
- h+=`<div class="approx-bar"><div style="width:${pct}%">${fmtT(tProp)}</div></div>`;
+
+ // Cards principais — DESTAQUE para bloco e inserções
+ h+=`<div class="result-cards">`;
+ h+=`<div class="r-card big" style="border:2px solid var(--gold)"><div class="val gold" style="font-size:40px">${fmtT(tProp)}</div><div class="lbl">📺 Tempo por programa (bloco)</div></div>`;
+ h+=`<div class="r-card big" style="border:2px solid var(--warn)"><div class="val" style="font-size:40px;color:var(--warn)">${fmtT(insPropDia)}</div><div class="lbl">Tempo de inserções por dia</div></div>`;
+ h+=`</div>`;
+
+ // Totais no período
+ h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">`;
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Programas no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:#C7C4FF">${fmtT(tPropCampanha)}</div><div style="font-size:11px;color:var(--mut)">tempo total de TV</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:#86EFAC;margin-top:6px">${fmtT(tPropCampanha)}</div><div style="font-size:11px;color:var(--mut)">tempo total de rádio</div>`;
+ h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">${numProgramas} programas</div><div style="font-size:10px;color:var(--mut)">(${dias} dias × 4 blocos)</div>`;
+ h+=`</div>`;
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Inserções no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--mut)">tempo total de inserções</div>`;
+ h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">~${numInsercoes} inserções</div><div style="font-size:10px;color:var(--mut)">(de 30 segundos cada)</div>`;
+ h+=`</div></div>`;
+
  // Detalhamento por partido
  if(ch.partidos.length>1){
-  h+=`<details class="detail-toggle"><summary>📊 Ver cálculo por partido (${ch.partidos.length} partidos)</summary><div class="detail-body">`;
-  ch.partidos.sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0)).forEach(p=>{
+  h+=`<details class="detail-toggle" style="margin-top:16px"><summary>📊 Ver distribuição por partido</summary><div class="detail-body">`;
+  [...ch.partidos].sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0)).forEach(p=>{
    const pb=state.bancada[p]||0;const share=suaBancada>0?pb/suaBancada:0;const tPart=tProp*share;
-   h+=`<div class="detail-row"><span class="d-name">${p}</span><span style="color:var(--mut)">${pb} dep · ${(share*100).toFixed(1)}%</span><span class="d-val">${fmtT(tPart)}/bloco</span></div>`;
+   h+=`<div class="detail-row"><span class="d-name">${p}</span><span class="d-val">${fmtT(tPart)}/bloco</span></div>`;
   });
-  h+=`<div style="padding-top:8px;margin-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--mut)">Distribuição interna é proporcional à bancada de cada partido dentro da chapa.</div>`;
   h+=`</div></details>`;
  }
- h+=`<div class="hint gold" style="margin-top:16px">Este é o seu <b>tempo mínimo garantido</b> — os 90% proporcionais à bancada (art. 47, §2º, Lei 9.504/97). O tempo final será <b>maior</b>, pois inclui os 10% igualitários (divididos entre todas as chapas).</div>`;
- h+=renderWeekType();
- h+=`<div class="bifurcation" style="margin-top:20px"><button class="btn lg" onclick="goStep(4)">Calcular com todas as chapas →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim (aproximado)</button></div>`;
+
+ if(isProp)h+=`<div class="hint" style="margin-top:16px">O tempo acima é do <b>partido</b>. A distribuição desse tempo entre os candidatos do partido é decisão interna da legenda.</div>`;
+ h+=`<div class="hint gold" style="margin-top:${isProp?'8':'16'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas).</div>`;
+ h+=`<div class="bifurcation" style="margin-top:20px"><button class="btn lg" onclick="goStep(4)">${isProp?'Ajustar quem disputa':'Calcular com todas as chapas'} →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim</button></div>`;
  document.getElementById('sc3Content').innerHTML=h;
 }
 
 /* ========== sc4: ADVERSARIAS ========== */
 function renderRivals(){
  const k=state.cargo,v=CARGOS[k];
+ const cargoNome=k==='depfed'?'deputado federal':k==='depest'?'deputado estadual':v.nm.toLowerCase();
  let h='';
- // Sua chapa fixa
- h+=`<div class="card" style="border-color:var(--gold);background:rgba(250,204,21,.05)"><h3 style="color:var(--gold)">⭐ Sua chapa</h3><div style="font-size:14px;font-weight:700">${escapeHTML(state.minhaChapa.nome||state.minhaChapa.partidos.join(' + '))}</div><div style="font-size:12px;color:var(--mut);margin-top:4px">Bancada: ${state.minhaChapa.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0)}</div></div>`;
 
  if(v.semcol){
-  // Proporcional: todos marcados, opt-out
-  h+=`<div class="hint">Para eleição proporcional, todos os partidos vêm marcados. <b>Desmarque</b> os que não terão candidato.</div>`;
+  document.getElementById('sc4Title').textContent='Quem disputa essa eleição?';
+  document.getElementById('sc4Lead').textContent=`Marque todos os partidos que terão candidatos a ${cargoNome} no seu estado.`;
   initPropAdv();
   const adv=state.chapasAdversarias;
-  const ativosN=adv.filter(c=>c.ativo!==false).length;
-  h+=`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"><button class="btn ghost sm" onclick="propAdvAll(true)">✓ Todos</button><button class="btn ghost sm" onclick="propAdvAll(false)">✕ Nenhum</button><button class="btn ghost sm" onclick="propAdvBancada()">Só com bancada</button><span style="color:var(--mut);font-size:12px;margin-left:auto"><b style="color:var(--txt)">${ativosN}</b> adversários</span></div>`;
-  const comBancada=adv.filter(c=>c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0)>0);
-  const semBancada=adv.filter(c=>c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0)===0);
+  const ativosN=adv.filter(c=>c.ativo!==false).length+1;// +1 pelo seu
+  h+=`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"><button class="btn ghost sm" onclick="propAdvAll(true)">✓ Marcar todos</button><button class="btn ghost sm" onclick="propAdvAll(false)">✕ Desmarcar todos</button><span style="color:var(--mut);font-size:12px;margin-left:auto"><b style="color:var(--txt)">${ativosN}</b> partidos disputando</span></div>`;
+  // Seu partido fixo no topo
+  h+=`<div class="party-pick on" style="border-color:var(--gold);background:rgba(250,204,21,.06);pointer-events:none;margin-bottom:8px"><div class="sig" style="color:var(--gold)">⭐ ${escapeHTML(state.minhaChapa.partidos[0]||'')}</div><div class="info"><b>Seu partido</b></div></div>`;
   h+=`<div class="party-picker">`;
-  comBancada.forEach((c,i)=>{const idx=adv.indexOf(c);const banc=c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0);
-   h+=`<div class="party-pick${c.ativo===false?' ':' on'}" onclick="togAdvProp(${idx})" style="${c.ativo===false?'opacity:.4':''}"><div class="sig">${escapeHTML(c.nome)}</div><div class="info">${c.federacoes.length?c.partidos.join('+'):''}</div><div class="banc">${banc}</div></div>`;});
+  adv.forEach((c,idx)=>{
+   const fed=c.federacoes.length?c.federacoes[0]:'';
+   h+=`<div class="party-pick${c.ativo===false?'':' on'}" onclick="togAdvProp(${idx})" style="${c.ativo===false?'opacity:.35':''}"><div class="sig">${escapeHTML(c.nome)}</div><div class="info">${fed?'<span style="color:var(--gold);font-size:10px">'+fed+'</span>':''}</div></div>`;
+  });
   h+=`</div>`;
-  if(semBancada.length>0){h+=`<details style="margin-top:12px"><summary>${semBancada.length} sem bancada</summary><div class="party-picker" style="margin-top:8px">`;
-   semBancada.forEach(c=>{const idx=adv.indexOf(c);h+=`<div class="party-pick${c.ativo===false?' ':' on'}" onclick="togAdvProp(${idx})" style="${c.ativo===false?'opacity:.4':''}"><div class="sig">${escapeHTML(c.nome)}</div><div class="banc">0</div></div>`;});
-   h+=`</div></details>`;}
  }else{
+  document.getElementById('sc4Title').textContent='Monte as chapas adversárias';
+  document.getElementById('sc4Lead').textContent='Adicione as chapas dos concorrentes para calcular a distribuição completa.';
   // Majoritário: adicionar chapas manualmente
   h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="color:var(--mut);font-size:13px">${state.chapasAdversarias.length} chapa(s) adversária(s)</span><button class="btn sm" onclick="addRival()">+ Nova chapa</button></div>`;
   state.chapasAdversarias.forEach((ch,i)=>{h+=renderRivalChapa(ch,i);});
@@ -829,11 +833,14 @@ function calcFull(){
 function renderFullResult(){
  const k=state.cargo,v=CARGOS[k],r=calcFull();
  if(r.unidades.length===0){document.getElementById('sc5Content').innerHTML='<div class="hint warn">Nenhuma chapa configurada.</div>';return;}
+ const isProp=CARGOS[k].semcol;
+ const cargoNome=k==='governador'?'Governo':k==='presidente'?'Presidência':k==='senador'?'Senado':k==='depfed'?'Deputado Federal':'Deputado Estadual';
  const max=Math.max(...r.unidades.map(u=>u.tB)),bolo=r.bolo,n=r.unidades.length;
  const ig=bolo*0.1,prop=bolo*0.9,pig=ig/n;
  const sorted=[...r.unidades].sort((a,b)=>{if(a.meu)return -1;if(b.meu)return 1;return b.tB-a.tB;});
  const dias=diasPorCargo(k);
- let h=`<h2 class="title">${v.ic} ${v.nm} — Resultado completo</h2><p class="lead">Distribuição entre ${n} chapas. Art. 47, §2º, Lei 9.504/97.</p>`;
+ let h=`<div style="text-align:center;margin-bottom:24px"><h2 class="title">Confira o seu tempo de Rádio e TV</h2><div style="color:var(--mut);font-size:14px;margin-top:4px">1º Turno · ${cargoNome} 2026</div><div style="font-size:13px;color:var(--mut);margin-top:4px">${n} partidos/chapas concorrentes</div></div>`;
+ if(isProp)h+=`<div class="hint" style="margin-bottom:16px">O tempo abaixo é do <b>partido</b>. A distribuição desse tempo entre os candidatos é decisão interna da legenda.</div>`;
  h+=gerarInsights(k,r);
  h+=`<div class="stat">`;
  h+=`<div class="s"><div class="v has-tip" data-tip="Tempo total de cada bloco de HGPE\n(rádio ou TV) para este cargo">${bolo}s</div><div class="l">Bolo/bloco</div></div>`;
@@ -872,7 +879,6 @@ function renderFullResult(){
   h+=`</div>`;
  });
 
- h+=renderWeekType();
  h+=`<details style="margin-top:20px"><summary>📋 Memorial de cálculo</summary><div class="memo">${escapeHTML(r.memo)}</div></details>`;
  document.getElementById('sc5Content').innerHTML=h;
 }
@@ -904,7 +910,7 @@ function renderWeekType(){
    {k:'depest',ic:'🏬',nm:'Dep. Estadual',t:'10min',cor:'#FDE68A',horarios:'📻 7:05 · 📻 12:05 · 📺 13:05 · 📺 20:35'}
   ]
  };
- let h=`<div class="card" style="margin-top:20px"><h3>📅 Semana-tipo do HGPE</h3>`;
+ let h=`<div class="card" style="margin-top:20px"><h3>📅 Distribuição semanal - Horário Gratuito de Propaganda Eleitoral</h3>`;
  h+=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;min-width:500px">`;
  dn.forEach((d,i)=>{
   const tts=[1,3,5].includes(i),mqs=[0,2,4].includes(i),dom=i===6;
