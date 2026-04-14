@@ -690,7 +690,7 @@ function renderMyChapa(){
   [...PARTIDOS].filter(p=>!q||p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=ch.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')" style="display:flex;justify-content:space-between;align-items:center"><b>${p.s}</b>${fed?'<span style="font-size:8px;color:var(--gold);white-space:nowrap">'+fed+'</span>':''}</div>`;
+   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')"><b>${p.s}</b>${fed?'<div style="font-size:7px;color:var(--gold);margin-top:1px;line-height:1">'+fed+'</div>':''}</div>`;
   });
   h+=`</div></div>`;
   c.innerHTML=h;
@@ -702,7 +702,7 @@ function renderMyChapa(){
   [...PARTIDOS].sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=state.minhaChapa.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="sig">${p.s}</div><div class="info" style="display:flex;justify-content:space-between;align-items:center;flex:1"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;white-space:nowrap;text-align:right">'+fed+'</span>':''}</div></div>`;
+   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b>${fed?'<div style="color:var(--gold);font-size:9px;margin-top:2px">'+fed+'</div>':''}</div></div>`;
   });
   h+='</div>';
   c.innerHTML=h;
