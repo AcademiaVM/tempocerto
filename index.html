@@ -758,28 +758,27 @@ function renderApproxResult(){
  h+=`<div style="font-size:20px;font-weight:800;font-family:'Sora',sans-serif;margin-top:8px">1º Turno — ${cargoNome} 2026</div>`;
  h+=`</div>`;
 
- // Cards principais — 2 colunas: Programa e Inserções
- h+=`<div class="result-cards">`;
- h+=`<div class="r-card big" style="border:2px solid var(--gold)"><div class="val gold" style="font-size:40px">${fmtT(tProp)}</div><div class="lbl">📺 Tempo por programa (bloco)</div></div>`;
- h+=`<div class="r-card big" style="border:2px solid var(--warn)"><div class="val" style="font-size:40px;color:var(--warn)">${fmtT(insPropDia)}</div><div class="lbl">Tempo de inserções por dia</div></div>`;
+ // Layout 2 colunas: Programa (esq) | Inserções (dir) — card principal + totais abaixo
+ h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
+ // COLUNA ESQUERDA: Programa
+ h+=`<div>`;
+ h+=`<div class="r-card big" style="border:2px solid var(--gold);margin-bottom:12px"><div class="val gold" style="font-size:40px">${fmtT(tProp)}</div><div class="lbl">📺 Tempo por programa (bloco)</div></div>`;
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;font-weight:700">Programas no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--gold)">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">Tempo total de TV no período eleitoral (${blocosTV} exibições)</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--gold);margin-top:8px">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">Tempo total de rádio no período eleitoral (${blocosRadio} exibições)</div>`;
+ h+=`</div></div>`;
+ // COLUNA DIREITA: Inserções
+ h+=`<div>`;
+ h+=`<div class="r-card big" style="border:2px solid var(--warn);margin-bottom:12px"><div class="val" style="font-size:40px;color:var(--warn)">${fmtT(insPropDia)}</div><div class="lbl">Tempo de inserções por dia</div></div>`;
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--warn);text-transform:uppercase;margin-bottom:8px;font-weight:700">Inserções no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--mut)">Tempo total de inserções no período eleitoral</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--warn);margin-top:8px;letter-spacing:.05em">Aproximadamente ${numInsercoes} inserções</div><div style="font-size:11px;color:var(--mut)">de 30 segundos cada</div>`;
+ h+=`</div></div>`;
  h+=`</div>`;
 
- // Hint: tempo mínimo + sobras — LOGO ABAIXO dos cards
+ // Hints — ANTES do detalhamento
  if(isProp)h+=`<div class="hint" style="margin-top:12px">O tempo acima é do <b>partido</b>. A distribuição desse tempo entre os candidatos do partido é decisão interna da legenda.</div>`;
  h+=`<div class="hint gold" style="margin-top:${isProp?'8':'12'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas) e as possíveis sobras de tempo que são redistribuídas.</div>`;
-
- // Totais no período — 2 colunas alinhadas com os cards
- h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">`;
- // Coluna programas
- h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;font-weight:700">Programas no período</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:var(--gold)">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--gold);opacity:.7">Tempo total de TV no período eleitoral (${blocosTV} exibições)</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:var(--gold);margin-top:8px">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--gold);opacity:.7">Tempo total de rádio no período eleitoral (${blocosRadio} exibições)</div>`;
- h+=`</div>`;
- // Coluna inserções
- h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--warn);text-transform:uppercase;margin-bottom:8px;font-weight:700">Inserções no período</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--warn);opacity:.7">Tempo total de inserções no período eleitoral</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:var(--warn);margin-top:8px;letter-spacing:.05em">Aproximadamente ${numInsercoes} inserções</div><div style="font-size:11px;color:var(--warn);opacity:.7">de 30 segundos cada</div>`;
- h+=`</div></div>`;
 
  // Detalhamento por partido (com aviso dos 6 maiores DENTRO)
  if(!isProp&&partidosComCl.length>1){
