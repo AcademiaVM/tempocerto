@@ -382,8 +382,8 @@ body>*{position:relative;z-index:1}
   <h2>Criar novo cenário</h2>
   <p>Descubra quanto tempo de TV e rádio a sua chapa vai ter</p>
  </div>
- <div id="homeWeek"></div>
  <div class="home-saved" id="homeSaved"></div>
+ <div id="homeWeek"></div>
 </div>
 
 <!-- sc1: TIPO DE ELEICAO -->
@@ -933,11 +933,7 @@ function renderWeekType(){
  h+=`<div style="background:rgba(250,204,21,.06);border:1px solid rgba(250,204,21,.2);border-radius:8px;padding:10px"><div style="font-weight:800;color:#FDE68A;margin-bottom:6px">Seg / Qua / Sex</div>`;
  grade.mqs.forEach(c=>{h+=`<div style="margin-bottom:4px"><b>${c.ic} ${c.nm}</b> — ${c.t}<br><span style="color:var(--mut)">${c.horarios}</span></div>`;});
  h+=`</div></div>`;
- // Inserções
- h+=`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--mut)">`;
- h+=`<b style="color:var(--txt)">Inserções:</b> 70min/dia rádio + 70min/dia TV em spots de 30s e 60s (5h às 24h, seg a dom)<br>`;
- h+=`<b style="color:var(--txt)">Período:</b> 27/ago a 01/out/2026 · 16 dias TTS · 19 dias MQS`;
- h+=`</div></div>`;
+ h+=`</div>`;
  return h;
 }
 
