@@ -523,32 +523,71 @@ function doLogout(){auth.signOut();}
 
 /* ========== DATA ========== */
 const UFS=["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
+// Partidos 2026 — bancada eleita 2022 (posse 01/fev/2023)
+// cl=true: atingiu cláusula de desempenho em 2022 (EC 97/2017) → tem direito a tempo de TV
+// cl=false: NÃO tem direito a tempo de TV (mesmo lançando candidato)
+// Federações com cláusula: FE BRASIL, PSDB/CIDADANIA, PSOL/REDE, UNIÃO PROGRESSISTA (ambos passaram), RENOVAÇÃO SOLIDÁRIA (PRD herdou)
 const PARTIDOS=[
- {s:"PL",n:"Partido Liberal",b:99},{s:"PT",n:"Partido dos Trabalhadores",b:68},{s:"UNIÃO",n:"União Brasil",b:59},{s:"PP",n:"Progressistas",b:47},
- {s:"MDB",n:"MDB",b:42},{s:"PSD",n:"Partido Social Democrático",b:42},{s:"REPUBLICANOS",n:"Republicanos",b:40},
- {s:"PDT",n:"PDT",b:17},{s:"PSB",n:"PSB",b:14},{s:"PSDB",n:"PSDB",b:14},
- {s:"PSOL",n:"PSOL",b:12},{s:"PODE",n:"Podemos",b:12},{s:"PCdoB",n:"PC do Brasil",b:7},{s:"AVANTE",n:"Avante",b:7},
- {s:"PV",n:"Partido Verde",b:6},{s:"CIDADANIA",n:"Cidadania",b:4},{s:"SOLIDARIEDADE",n:"Solidariedade",b:4},
- {s:"PRD",n:"PRD",b:11},{s:"NOVO",n:"Partido Novo",b:3},{s:"MOBILIZA",n:"Mobilização Nacional",b:3},{s:"REDE",n:"Rede Sustentabilidade",b:2},
- {s:"AGIR",n:"Agir",b:0},{s:"DC",n:"Democracia Cristã",b:0},{s:"PCB",n:"PCB",b:0},{s:"PCO",n:"PCO",b:0},
- {s:"PRTB",n:"PRTB",b:0},{s:"PSTU",n:"PSTU",b:0},{s:"UP",n:"Unidade Popular",b:0},
- {s:"DEMOCRATA",n:"Democrata",b:0},{s:"MISSÃO",n:"Partido Missão",b:0}
+ {s:"PL",n:"Partido Liberal",b:99,cl:true},
+ {s:"PT",n:"Partido dos Trabalhadores",b:68,cl:true},
+ {s:"UNIÃO",n:"União Brasil",b:59,cl:true},
+ {s:"PP",n:"Progressistas",b:47,cl:true},
+ {s:"MDB",n:"MDB",b:42,cl:true},
+ {s:"PSD",n:"Partido Social Democrático",b:42,cl:true},
+ {s:"REPUBLICANOS",n:"Republicanos",b:40,cl:true},
+ {s:"PDT",n:"PDT",b:17,cl:true},
+ {s:"PSB",n:"PSB",b:14,cl:true},
+ {s:"PSDB",n:"PSDB",b:14,cl:true},
+ {s:"PSOL",n:"PSOL",b:12,cl:true},
+ {s:"PODE",n:"Podemos",b:12,cl:true},
+ {s:"PCdoB",n:"PC do Brasil",b:7,cl:true},
+ {s:"PV",n:"Partido Verde",b:6,cl:true},
+ {s:"CIDADANIA",n:"Cidadania",b:4,cl:true},
+ {s:"REDE",n:"Rede Sustentabilidade",b:2,cl:true},
+ {s:"PRD",n:"PRD",b:11,cl:true},
+ {s:"SOLIDARIEDADE",n:"Solidariedade",b:4,cl:true},
+ {s:"AVANTE",n:"Avante",b:7,cl:false},
+ {s:"NOVO",n:"Partido Novo",b:3,cl:false},
+ {s:"MOBILIZA",n:"Mobilização Nacional",b:3,cl:false},
+ {s:"AGIR",n:"Agir",b:0,cl:false},
+ {s:"DC",n:"Democracia Cristã",b:0,cl:false},
+ {s:"PCB",n:"PCB",b:0,cl:false},
+ {s:"PCO",n:"PCO",b:0,cl:false},
+ {s:"PRTB",n:"PRTB",b:0,cl:false},
+ {s:"PSTU",n:"PSTU",b:0,cl:false},
+ {s:"UP",n:"Unidade Popular",b:0,cl:false},
+ {s:"DEMOCRATA",n:"Democrata",b:0,cl:false},
+ {s:"MISSÃO",n:"Partido Missão",b:0,cl:false},
+ {s:"PMB",n:"PMB",b:0,cl:false},
+ {s:"PMN",n:"PMN",b:0,cl:false}
 ];
-const FED={"FE BRASIL":["PT","PCdoB","PV"],"PSDB/CIDADANIA":["PSDB","CIDADANIA"],"PSOL/REDE":["PSOL","REDE"]};
+// Federações 2026 — atualizado conforme registros TSE
+const FED={
+ "FE BRASIL":["PT","PCdoB","PV"],
+ "PSDB/CIDADANIA":["PSDB","CIDADANIA"],
+ "PSOL/REDE":["PSOL","REDE"],
+ "UNIÃO PROGRESSISTA":["UNIÃO","PP"],
+ "RENOVAÇÃO SOLIDÁRIA":["SOLIDARIEDADE","PRD"]
+};
+// Blocos 2026 (renovação 2/3 Senado): bloco = 25min
+// Dias federais (TTS): Presidente 12min30s + DepFed 12min30s = 25min
+// Dias estaduais (MQS): Senador 7min + DepEst 9min + Gov 9min = 25min
 const CARGOS={
  presidente:{nm:"Presidente",ic:"🇧🇷",bolo:750,dias:"tts"},
- governador:{nm:"Governador",ic:"🏛",bolo:600,dias:"mqs"},
- senador:{nm:"Senador",ic:"⚖",bolo:300,dias:"mqs"},
+ governador:{nm:"Governador",ic:"🏛",bolo:540,dias:"mqs"},
+ senador:{nm:"Senador",ic:"⚖",bolo:420,dias:"mqs"},
  depfed:{nm:"Dep. Federal",ic:"🏢",bolo:750,dias:"tts",semcol:true},
- depest:{nm:"Dep. Estadual",ic:"🏬",bolo:600,dias:"mqs",semcol:true}
+ depest:{nm:"Dep. Estadual",ic:"🏬",bolo:540,dias:"mqs",semcol:true}
 };
-// Inserções: 70min/dia rádio + 70min/dia TV = 8400s totais
-// 50% majoritárias (4200s) + 50% proporcionais (4200s) — art. 52, II, Res. TSE 23.610/2019
-// Dentro de cada grupo, divisão proporcional ao bolo de cada cargo
-// Majoritárias: pres 750 + gov 600 + sen 300 = 1650 → pres 4200*750/1650=1909, gov 4200*600/1650=1527, sen 4200*300/1650=764
-// Proporcionais: depfed 750 + depest 600 = 1350 → depfed 4200*750/1350=2333, depest 4200*600/1350=1867
-const INSERT_DIA={presidente:1909,governador:1527,senador:764,depfed:2333,depest:1867};
-const DIAS_TTS=16,DIAS_MQS=19;
+// Inserções: 70min/dia por veículo = 4200s por veículo
+// Dias federais (TTS): 50% pres + 50% depfed (mesma proporção do bloco)
+// Dias estaduais (MQS): sen 28% + depest 36% + gov 36% (proporção 7/9/9 do bloco de 25min)
+// Em segundos por veículo: pres 2100, depfed 2100, sen 1176, depest 1512, gov 1512
+// Rádio + TV = x2
+const INSERT_DIA={presidente:4200,governador:3024,senador:2352,depfed:4200,depest:3024};
+// Período HGPE 2026: 28/ago a 01/out (Res. TSE 23.760/2026)
+// 35 dias corridos, 30 dias úteis (seg a sáb), 15 TTS + 15 MQS
+const DIAS_TTS=15,DIAS_MQS=15;
 function diasPorCargo(k){return CARGOS[k].dias==='tts'?DIAS_TTS:DIAS_MQS;}
 const bancadaTotal=()=>Object.values(state.bancada).reduce((a,b)=>a+b,0);
 
@@ -692,8 +731,11 @@ function filterPartyPicker(q){document.querySelectorAll('.party-pick').forEach(e
 function renderApproxResult(){
  const k=state.cargo,v=CARGOS[k],ch=state.minhaChapa;
  if(!ch||ch.partidos.length===0){document.getElementById('sc3Content').innerHTML='<div class="hint warn">Selecione ao menos um partido.</div>';return;}
- const suaBancada=ch.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0);
- const bt=bancadaTotal(),bolo=v.bolo;
+ const partidosComCl=(ch.partidos||[]).filter(p=>temClausula(p));
+ const suaBancada=CARGOS[k].semcol?partidosComCl.reduce((a,p)=>a+(state.bancada[p]||0),0):bancada6Maiores(partidosComCl);
+ // Bancada total = soma de TODOS os partidos com cláusula
+ const bt=PARTIDOS.filter(p=>p.cl).reduce((a,p)=>a+p.b,0);
+ const bolo=v.bolo;
  const tProp=bt>0?bolo*0.9*suaBancada/bt:0;
  const dias=diasPorCargo(k);
  const tPropDia=tProp*4;
@@ -808,24 +850,55 @@ function togRivalFed(idx,fn){const ch=state.chapasAdversarias[idx];if(ch.federac
 function togRivalPart(idx,s){const ch=state.chapasAdversarias[idx];if(ch.partidos.includes(s))ch.partidos=ch.partidos.filter(x=>x!==s);else ch.partidos.push(s);isDirty=true;renderRivals();}
 
 /* ========== CALCULO ========== */
+// Bancada dos 6 maiores partidos/federações de uma coligação (Lei 13.165/2015)
+function bancada6Maiores(partidos){
+ // Agrupa por federação — cada federação conta como 1 unidade
+ const unitsMap=new Map();
+ partidos.forEach(p=>{
+  let key=p;
+  for(const[fn,members]of Object.entries(FED)){if(members.includes(p)){key=fn;break;}}
+  unitsMap.set(key,(unitsMap.get(key)||0)+(state.bancada[p]||0));
+ });
+ const sorted=[...unitsMap.values()].sort((a,b)=>b-a);
+ return sorted.slice(0,6).reduce((a,b)=>a+b,0);
+}
+
+// Verifica se partido tem cláusula (ou está em federação com cláusula)
+function temClausula(sigla){
+ const p=PARTIDOS.find(x=>x.s===sigla);
+ if(p&&p.cl)return true;
+ // Verifica se está em federação onde algum membro tem cláusula
+ for(const[fn,members]of Object.entries(FED)){
+  if(members.includes(sigla)&&members.some(m=>{const pp=PARTIDOS.find(x=>x.s===m);return pp&&pp.cl;}))return true;
+ }
+ return false;
+}
+
 function calcFull(){
  const k=state.cargo,cfg=CARGOS[k];
  const allChapas=[{...state.minhaChapa,meu:true},...state.chapasAdversarias.filter(c=>c.ativo!==false&&c.partidos.length>0)];
  const unidades=[];
  allChapas.forEach((c,i)=>{
+  // Filtrar partidos sem cláusula
+  const partidosComCl=(c.partidos||[]).filter(p=>temClausula(p));
+  if(partidosComCl.length===0)return;
   if(cfg.semcol){
-   const fp=c.federacoes.flatMap(f=>FED[f]),soltos=c.partidos.filter(p=>!fp.includes(p));
-   c.federacoes.forEach(fn=>{const pts=FED[fn].filter(p=>c.partidos.includes(p));unidades.push({nome:c.nome||fn,tipo:'Federação',partidos:pts,bancada:pts.reduce((a,p)=>a+(state.bancada[p]||0),0),meu:!!c.meu});});
+   // Proporcional: cada partido/federação isolado
+   const fp=(c.federacoes||[]).flatMap(f=>FED[f]||[]),soltos=partidosComCl.filter(p=>!fp.includes(p));
+   (c.federacoes||[]).forEach(fn=>{const pts=(FED[fn]||[]).filter(p=>partidosComCl.includes(p));if(pts.length>0)unidades.push({nome:c.nome||fn,tipo:'Federação',partidos:pts,bancada:pts.reduce((a,p)=>a+(state.bancada[p]||0),0),meu:!!c.meu});});
    soltos.forEach(p=>unidades.push({nome:c.nome||p,tipo:'Partido',partidos:[p],bancada:state.bancada[p]||0,meu:!!c.meu}));
   }else{
-   unidades.push({nome:c.nome||`Chapa ${i+1}`,tipo:c.partidos.length>1?'Coligação':'Partido',partidos:c.partidos,bancada:c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0),meu:!!c.meu});
+   // Majoritário: coligação usa regra dos 6 maiores
+   const banc=partidosComCl.length>1?bancada6Maiores(partidosComCl):partidosComCl.reduce((a,p)=>a+(state.bancada[p]||0),0);
+   unidades.push({nome:c.nome||`Chapa ${i+1}`,tipo:partidosComCl.length>1?'Coligação':'Partido',partidos:partidosComCl,bancada:banc,meu:!!c.meu});
   }
  });
- const n=unidades.length;if(n===0)return{unidades:[],bolo:cfg.bolo,memo:'Sem chapas.'};
+ const n=unidades.length;if(n===0)return{unidades:[],bolo:cfg.bolo,memo:'Sem chapas com cláusula.'};
  // Lei 9.504/97, art. 47, §2º (redação Lei 14.211/2021): 90% proporcional + 10% igualitário
  const bolo=cfg.bolo,ig=bolo*0.1,prop=bolo*0.9,bt=unidades.reduce((a,u)=>a+u.bancada,0),pig=ig/n;
  unidades.forEach(u=>{u.tIg=pig;u.tPr=bt>0?prop*u.bancada/bt:0;u.tB=u.tIg+u.tPr;u.tD=u.tB*4;u.tIns=INSERT_DIA[k]?(INSERT_DIA[k]*0.1/n)+(INSERT_DIA[k]*0.9*(bt>0?u.bancada/bt:0)):0;});
- let memo=`${cfg.nm.toUpperCase()} — ${bolo}s/bloco · ${n} unidades\n10% ig = ${ig.toFixed(1)}s ÷ ${n} = ${pig.toFixed(1)}s/unid\n90% prop = ${prop.toFixed(1)}s (bancada ${bt})\n`;
+ let memo=`${cfg.nm.toUpperCase()} — ${bolo}s/bloco · ${n} unidades com cláusula\n10% ig = ${ig.toFixed(1)}s ÷ ${n} = ${pig.toFixed(1)}s/unid\n90% prop = ${prop.toFixed(1)}s (bancada ${bt})\n`;
+ if(!cfg.semcol)memo+=`(majoritário: bancada limitada aos 6 maiores partidos/federações por coligação)\n`;
  unidades.forEach(u=>{memo+=`${u.meu?'⭐ ':'  '}${u.nome} [${u.tipo}] b=${u.bancada} → ${u.tB.toFixed(1)}s/bloco\n`;});
  return{unidades,bolo,memo,parteIgual:pig,bancadaTotal:bt};
 }
@@ -904,9 +977,9 @@ function renderWeekType(){
    {k:'depfed',ic:'🏢',nm:'Dep. Federal',t:'12min30s',cor:'#C7C4FF',horarios:'📻 7:12 · 📻 12:12 · 📺 13:12 · 📺 20:42'}
   ],
   mqs:[
-   {k:'governador',ic:'🏛',nm:'Governador',t:'10min',cor:'#FDE68A',horarios:'📻 7:15 · 📻 12:15 · 📺 13:15 · 📺 20:45'},
-   {k:'senador',ic:'⚖',nm:'Senador',t:'5min',cor:'#FDE68A',horarios:'📻 7:00 · 📻 12:00 · 📺 13:00 · 📺 20:30'},
-   {k:'depest',ic:'🏬',nm:'Dep. Estadual',t:'10min',cor:'#FDE68A',horarios:'📻 7:05 · 📻 12:05 · 📺 13:05 · 📺 20:35'}
+   {k:'senador',ic:'⚖',nm:'Senador',t:'7min',cor:'#FDE68A',horarios:'📻 7:00 · 📻 12:00 · 📺 13:00 · 📺 20:30'},
+   {k:'depest',ic:'🏬',nm:'Dep. Estadual',t:'9min',cor:'#FDE68A',horarios:'📻 7:07 · 📻 12:07 · 📺 13:07 · 📺 20:37'},
+   {k:'governador',ic:'🏛',nm:'Governador',t:'9min',cor:'#FDE68A',horarios:'📻 7:16 · 📻 12:16 · 📺 13:16 · 📺 20:46'}
   ]
  };
  let h=`<div class="card" style="margin-top:20px"><h3>📅 Distribuição semanal - Horário Gratuito de Propaganda Eleitoral</h3>`;
