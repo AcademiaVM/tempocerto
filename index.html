@@ -793,12 +793,12 @@ function renderApproxResult(){
   if(temMaisDe6)h+=`<div style="font-size:11px;color:var(--ok);font-weight:700;margin-bottom:8px;text-transform:uppercase">✓ Contabilizados (6 maiores)</div>`;
   top6.forEach(u=>{
    const share=suaBancada>0?u.bancada/suaBancada:0;const t=tProp*share;
-   h+=`<div class="detail-row"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span style="color:var(--mut)">${u.bancada} dep</span><span class="d-val">${fmtT(t)}/bloco</span></div>`;
+   h+=`<div class="detail-row"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span class="d-val">${fmtT(t)}/bloco</span></div>`;
   });
   if(fora.length>0){
    h+=`<div style="font-size:11px;color:var(--err);font-weight:700;margin:12px 0 8px;text-transform:uppercase;padding-top:8px;border-top:1px solid var(--line)">✕ Não contabilizados (excedentes)</div>`;
    fora.forEach(u=>{
-    h+=`<div class="detail-row" style="opacity:.5"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span style="color:var(--mut)">${u.bancada} dep</span><span class="d-val" style="color:var(--dim)">não soma</span></div>`;
+    h+=`<div class="detail-row" style="opacity:.5"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span class="d-val" style="color:var(--dim)">não soma</span></div>`;
    });
   }
   h+=`</div></details>`;
