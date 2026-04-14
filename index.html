@@ -689,7 +689,7 @@ function renderMyChapa(){
   h+=`<input type="text" placeholder="Buscar partido..." oninput="state.busca=this.value;renderMyChapa()" style="margin-bottom:10px" id="mySearch" value="${escapeHTML(state.busca||'')}">`;
   h+=`<div class="part-grid">`;
   const q=(state.busca||'').toLowerCase();
-  [...PARTIDOS].filter(p=>!q||p.s.toLowerCase().startsWith(q)||p.n.toLowerCase().startsWith(q)).sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
+  [...PARTIDOS].filter(p=>!q||p.s.toLowerCase().startsWith(q)).sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=ch.partidos.includes(p.s);
    const fed=getFedTag(p.s);
    h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')" style="justify-content:space-between"><b>${p.s}</b>${fed?'<span style="font-size:7px;color:var(--gold);text-align:right">'+fed+'</span>':''}</div>`;
@@ -731,7 +731,7 @@ function pickMyParty(s,isFed){
  else{state.minhaChapa.partidos=[s];state.minhaChapa.nome=s;}
  isDirty=true;renderMyChapa();
 }
-function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll('.party-pick').forEach(el=>{const sig=el.querySelector('.sig')?.textContent?.toLowerCase()||'';const nome=el.querySelector('.info b')?.textContent?.toLowerCase()||'';el.style.display=(!ql||sig.startsWith(ql)||nome.startsWith(ql))?'':'none';});}
+function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll('.party-pick').forEach(el=>{const sig=el.querySelector('.sig')?.textContent?.toLowerCase()||'';el.style.display=(!ql||sig.startsWith(ql))?'':'none';});}
 
 /* ========== sc3: RESULTADO APROXIMADO ========== */
 function renderApproxResult(){
