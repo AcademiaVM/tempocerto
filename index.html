@@ -744,7 +744,7 @@ function renderApproxResult(){
  }
 
  if(isProp)h+=`<div class="hint" style="margin-top:16px">O tempo acima é do <b>partido</b>. A distribuição desse tempo entre os candidatos do partido é decisão interna da legenda.</div>`;
- h+=`<div class="hint gold" style="margin-top:${isProp?'8':'16'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas).</div>`;
+ h+=`<div class="hint gold" style="margin-top:${isProp?'8':'16'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas) e as possíveis sobras de tempo que são redistribuídas.</div>`;
  h+=`<div class="bifurcation" style="margin-top:20px"><button class="btn lg" onclick="goStep(4)">${isProp?'Ajustar quem disputa':'Calcular com todas as chapas'} →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim</button></div>`;
  document.getElementById('sc3Content').innerHTML=h;
 }
