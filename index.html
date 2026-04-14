@@ -110,7 +110,10 @@ input:focus,select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 
 .fed-chip{padding:8px 14px;border-radius:8px;background:var(--bg4);border:1px solid var(--line);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
 .fed-chip.on{background:linear-gradient(90deg,var(--gold),#EAB308);color:#000;border-color:transparent}
 .fed-chip small{display:block;font-weight:400;opacity:.75;font-size:10px;margin-top:2px}
-.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;max-height:280px;overflow-y:auto;padding:6px;background:var(--bg3);border-radius:8px;border:1px solid var(--line)}
+.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px;max-height:280px;overflow-y:auto;padding:6px;background:var(--bg3);border-radius:8px;border:1px solid var(--line)}
+.part{overflow:hidden}
+.part b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.part span{flex-shrink:0}
 .part{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none}
 .part:hover{background:var(--bg4)}
 .part.on{background:rgba(63,59,255,.2)}
@@ -122,8 +125,8 @@ input:focus,select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 
 .bancada-total .val{font-size:22px;font-weight:800;color:var(--purple);font-family:'Sora',sans-serif}
 
 /* PROPORCIONAL PARTY PICKER */
-.party-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:16px}
-.party-pick{background:var(--bg3);border:2px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px}
+.party-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:16px}
+.party-pick{background:var(--bg3);border:2px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px;overflow:hidden}
 .party-pick:hover{border-color:var(--purple)}
 .party-pick.on{border-color:var(--purple);background:linear-gradient(160deg,rgba(63,59,255,.15),rgba(96,24,186,.05))}
 .party-pick.fed{border-left:3px solid var(--gold)}
