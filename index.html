@@ -773,8 +773,36 @@ function renderApproxResult(){
  h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">~${numInsercoes} inserções</div><div style="font-size:10px;color:var(--mut)">(de 30 segundos cada)</div>`;
  h+=`</div></div>`;
 
- // Detalhamento por partido
- if(ch.partidos.length>1){
+ // Regra dos 6 maiores — aviso e detalhamento
+ if(!isProp&&partidosComCl.length>1){
+  // Agrupar por federação para determinar unidades
+  const unitsMap=new Map();
+  partidosComCl.forEach(p=>{let key=p;for(const[fn,members]of Object.entries(FED)){if(members.includes(p)){key=fn;break;}}
+   if(!unitsMap.has(key))unitsMap.set(key,{nome:key,partidos:[],bancada:0});
+   unitsMap.get(key).partidos.push(p);unitsMap.get(key).bancada+=(state.bancada[p]||0);});
+  const units=[...unitsMap.values()].sort((a,b)=>b.bancada-a.bancada);
+  const temMaisDe6=units.length>6;
+  const top6=units.slice(0,6);
+  const fora=units.slice(6);
+
+  if(temMaisDe6){
+   h+=`<div class="hint warn" style="margin-top:16px">⚠ Sua chapa tem <b>${units.length} partidos/federações</b>. Pela lei (Lei 13.165/2015), apenas os <b>6 maiores</b> contam para o cálculo do tempo de TV e rádio. Os demais fazem parte da coligação mas não somam bancada para o tempo.</div>`;
+  }
+
+  h+=`<details class="detail-toggle" style="margin-top:12px"><summary>📊 Ver distribuição por partido/federação</summary><div class="detail-body">`;
+  if(temMaisDe6)h+=`<div style="font-size:11px;color:var(--ok);font-weight:700;margin-bottom:8px;text-transform:uppercase">✓ Contabilizados (6 maiores)</div>`;
+  top6.forEach(u=>{
+   const share=suaBancada>0?u.bancada/suaBancada:0;const t=tProp*share;
+   h+=`<div class="detail-row"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span style="color:var(--mut)">${u.bancada} dep</span><span class="d-val">${fmtT(t)}/bloco</span></div>`;
+  });
+  if(fora.length>0){
+   h+=`<div style="font-size:11px;color:var(--err);font-weight:700;margin:12px 0 8px;text-transform:uppercase;padding-top:8px;border-top:1px solid var(--line)">✕ Não contabilizados (excedentes)</div>`;
+   fora.forEach(u=>{
+    h+=`<div class="detail-row" style="opacity:.5"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span style="color:var(--mut)">${u.bancada} dep</span><span class="d-val" style="color:var(--dim)">não soma</span></div>`;
+   });
+  }
+  h+=`</div></details>`;
+ }else if(isProp&&ch.partidos.length>1){
   h+=`<details class="detail-toggle" style="margin-top:16px"><summary>📊 Ver distribuição por partido</summary><div class="detail-body">`;
   [...ch.partidos].sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0)).forEach(p=>{
    const pb=state.bancada[p]||0;const share=suaBancada>0?pb/suaBancada:0;const tPart=tProp*share;
