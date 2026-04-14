@@ -1028,14 +1028,14 @@ function renderComparativo(sA,sB){
   h+=`<div class="hint ${diff>0?'gold':diff<0?'':'gold'}" style="margin-top:12px;text-align:center"><b>Diferença: ${diff>0?'+':''}${fmtT(diff)}</b> por bloco ${diff>0?'a favor de B':diff<0?'a favor de A':'— empate'}</div>`;
   if(approxA||approxB)h+=`<div class="hint" style="margin-top:8px;font-size:12px">Cenários marcados como "mínimo" mostram apenas o tempo garantido (90% proporcional). Para resultado completo, calcule com todas as chapas.</div>`;
  }
- h+=`<div style="margin-top:20px"><div style="display:grid;grid-template-columns:1fr 100px 100px 80px;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--mut);font-size:11px;font-weight:700;text-transform:uppercase"><div>Unidade</div><div style="text-align:right">Cenário A</div><div style="text-align:right">Cenário B</div><div style="text-align:right">Dif.</div></div>`;
- const nomes=new Set([...uA.map(u=>u.nome),...uB.map(u=>u.nome)]);
- [...nomes].sort().forEach(nm=>{
-  const a=uA.find(u=>u.nome===nm),b=uB.find(u=>u.nome===nm);
-  const tA=a?a.tB:0,tB_=b?b.tB:0,diff=tB_-tA;
-  h+=`<div style="display:grid;grid-template-columns:1fr 100px 100px 80px;gap:8px;padding:8px 0;border-bottom:1px solid rgba(42,42,74,.3);font-size:13px;align-items:center"><div><b>${escapeHTML(nm)}</b></div><div style="text-align:right">${a?fmtT(tA):'—'}</div><div style="text-align:right">${b?fmtT(tB_):'—'}</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;${diff>0.5?'background:rgba(34,197,94,.15);color:#86EFAC':diff<-0.5?'background:rgba(239,68,68,.15);color:#FCA5A5':'color:var(--mut)'}">${diff>0.5?'+'+fmtT(diff):diff<-0.5?'-'+fmtT(Math.abs(diff)):'='}</span></div></div>`;
- });
+ // Composição de cada cenário
+ h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">`;
+ h+=`<div class="card"><h3 style="color:#C7C4FF">Cenário A — Composição</h3>`;
+ uA.forEach(u=>h+=`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(42,42,74,.3)"><span>${escapeHTML(u.nome)}</span><b>${fmtT(u.tB)}</b></div>`);
  h+=`</div>`;
+ h+=`<div class="card"><h3 style="color:var(--gold)">Cenário B — Composição</h3>`;
+ uB.forEach(u=>h+=`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(42,42,74,.3)"><span>${escapeHTML(u.nome)}</span><b>${fmtT(u.tB)}</b></div>`);
+ h+=`</div></div>`;
  document.getElementById('cmpContent').innerHTML=h;
 }
 
