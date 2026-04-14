@@ -992,13 +992,25 @@ function renderComparativo(sA,sB){
  const dA=sA.data,dB=sB.data;
  if(!dA||!dB||dA.cargo!==dB.cargo){document.getElementById('cmpContent').innerHTML='<div class="hint warn">Os cenários precisam ser do mesmo cargo para comparar.</div>';return;}
  const k=dA.cargo,cfg=CARGOS[k];if(!cfg){document.getElementById('cmpContent').innerHTML='<div class="hint warn">Cargo não reconhecido.</div>';return;}
- // Calc each
+ // Calc each — if no rivals, show minimum guaranteed (90% prop only)
  function calcFrom(d){
-  const allCh=[{...d.minhaChapa,meu:true},...(d.chapasAdversarias||[]).filter(c=>c.ativo!==false&&c.partidos&&c.partidos.length>0)];
-  const units=[];const banc=d.bancada||Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
-  allCh.forEach(c=>{if(cfg.semcol){const fp=(c.federacoes||[]).flatMap(f=>FED[f]||[]);(c.federacoes||[]).forEach(fn=>{const pts=(FED[fn]||[]).filter(p=>(c.partidos||[]).includes(p));units.push({nome:c.nome||fn,bancada:pts.reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});});(c.partidos||[]).filter(p=>!fp.includes(p)).forEach(p=>units.push({nome:c.nome||p,bancada:banc[p]||0,meu:!!c.meu}));}else{units.push({nome:c.nome||c.partidos.join('+'),bancada:(c.partidos||[]).reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});}});
-  const n=units.length,bolo=cfg.bolo,ig=bolo*0.1,prop=bolo*0.9,bt=units.reduce((a,u)=>a+u.bancada,0),pig=n?ig/n:0;
-  units.forEach(u=>{u.tB=(n?pig:0)+(bt>0?prop*u.bancada/bt:0);});
+  const banc=d.bancada||Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
+  const bt=Object.values(banc).reduce((a,b)=>a+b,0);
+  const bolo=cfg.bolo;
+  const hasRivals=(d.chapasAdversarias||[]).filter(c=>c.ativo!==false&&c.partidos&&c.partidos.length>0).length>0;
+  if(!hasRivals){
+   // Approximate: only 90% proportional (minimum guaranteed)
+   const ch=d.minhaChapa||{partidos:[],federacoes:[],nome:''};
+   const myBanc=(ch.partidos||[]).reduce((a,p)=>a+(banc[p]||0),0);
+   const tB=bt>0?bolo*0.9*myBanc/bt:0;
+   return [{nome:ch.nome||ch.partidos.join('+')||'Minha chapa',bancada:myBanc,meu:true,tB,approx:true}];
+  }
+  // Full calc with rivals
+  const allCh=[{...(d.minhaChapa||{partidos:[],federacoes:[]}),meu:true},...(d.chapasAdversarias||[]).filter(c=>c.ativo!==false&&c.partidos&&c.partidos.length>0)];
+  const units=[];
+  allCh.forEach(c=>{if(cfg.semcol){const fp=(c.federacoes||[]).flatMap(f=>FED[f]||[]);(c.federacoes||[]).forEach(fn=>{const pts=(FED[fn]||[]).filter(p=>(c.partidos||[]).includes(p));units.push({nome:c.nome||fn,bancada:pts.reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});});(c.partidos||[]).filter(p=>!fp.includes(p)).forEach(p=>units.push({nome:c.nome||p,bancada:banc[p]||0,meu:!!c.meu}));}else{units.push({nome:c.nome||(c.partidos||[]).join('+'),bancada:(c.partidos||[]).reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});}});
+  const n=units.length,ig=bolo*0.1,prop=bolo*0.9,btU=units.reduce((a,u)=>a+u.bancada,0),pig=n?ig/n:0;
+  units.forEach(u=>{u.tB=(n?pig:0)+(btU>0?prop*u.bancada/btU:0);});
   return units;
  }
  const uA=calcFrom(dA),uB=calcFrom(dB);
@@ -1011,8 +1023,10 @@ function renderComparativo(sA,sB){
  const meuA=uA.find(u=>u.meu),meuB=uB.find(u=>u.meu);
  if(meuA&&meuB){
   const diff=meuB.tB-meuA.tB;
-  h+=`<div class="result-cards"><div class="r-card"><div class="val" style="color:#C7C4FF">${fmtT(meuA.tB)}</div><div class="lbl">Cenário A — por bloco</div></div><div class="r-card"><div class="val" style="color:var(--gold)">${fmtT(meuB.tB)}</div><div class="lbl">Cenário B — por bloco</div></div></div>`;
+  const approxA=meuA.approx,approxB=meuB.approx;
+  h+=`<div class="result-cards"><div class="r-card"><div class="val" style="color:#C7C4FF">${fmtT(meuA.tB)}</div><div class="lbl">Cenário A${approxA?' (mínimo)':''} — por bloco</div></div><div class="r-card"><div class="val" style="color:var(--gold)">${fmtT(meuB.tB)}</div><div class="lbl">Cenário B${approxB?' (mínimo)':''} — por bloco</div></div></div>`;
   h+=`<div class="hint ${diff>0?'gold':diff<0?'':'gold'}" style="margin-top:12px;text-align:center"><b>Diferença: ${diff>0?'+':''}${fmtT(diff)}</b> por bloco ${diff>0?'a favor de B':diff<0?'a favor de A':'— empate'}</div>`;
+  if(approxA||approxB)h+=`<div class="hint" style="margin-top:8px;font-size:12px">Cenários marcados como "mínimo" mostram apenas o tempo garantido (90% proporcional). Para resultado completo, calcule com todas as chapas.</div>`;
  }
  h+=`<div style="margin-top:20px"><div style="display:grid;grid-template-columns:1fr 100px 100px 80px;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--mut);font-size:11px;font-weight:700;text-transform:uppercase"><div>Unidade</div><div style="text-align:right">Cenário A</div><div style="text-align:right">Cenário B</div><div style="text-align:right">Dif.</div></div>`;
  const nomes=new Set([...uA.map(u=>u.nome),...uB.map(u=>u.nome)]);
