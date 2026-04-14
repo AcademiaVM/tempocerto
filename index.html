@@ -243,7 +243,7 @@ details[open] summary{margin-bottom:10px}
 .print-header,.print-cargo-title{display:none}
 
 /* NOISE TEXTURE */
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 body>*{position:relative;z-index:1}
 
 /* ANIMATIONS */
@@ -261,24 +261,25 @@ body>*{position:relative;z-index:1}
  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
  body{background:#fff!important;color:#000!important;font-size:10pt}
  body::before{display:none!important}
- header,.nav-foot,.modal,button,.auth-screen,.loading-overlay,.user-bar,.bifurcation,.approx-bar,.mobile-results{display:none!important}
- .print-header{display:block!important;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #000}
- .print-header h2{font-size:16pt;margin-bottom:2px}
- .print-header .sub{font-size:10pt;color:#444}
+ header,.nav-foot,.modal,button,.auth-screen,.loading-overlay,.user-bar,.bifurcation,.approx-bar,.mobile-results,.home-hero,.home-saved,#homeWeek{display:none!important}
  main{padding:0!important;max-width:none!important}
  .screen{display:none!important}
  .screen#sc3,.screen#sc5{display:block!important}
- .card,.r-card,.chapa-builder,.result-cards{background:#fff!important;border:1px solid #ccc!important;color:#000!important}
- table.result-table{display:table!important}
+ .card,.r-card,.chapa-builder,.result-cards,.detail-toggle{background:#fff!important;border:1px solid #ccc!important;color:#000!important;page-break-inside:avoid}
+ .r-card .val,.r-card .lbl{color:#000!important}
+ .r-card .val.gold{color:#b45309!important}
  .stat .s{background:#f5f5f5!important;border:1px solid #ddd!important}
  .stat .s .v,.stat .s .l{color:#000!important}
  .insight{background:#f5f5f5!important;border:1px solid #ddd!important;color:#000!important}
- h2.title,h3,.r-card .val,.r-card .lbl{color:#000!important}
+ .has-tip:hover::after,.has-tip:hover::before{display:none!important}
+ h2.title,h3{color:#000!important}
  .lead,.meta,.sub,.hint{color:#444!important}
  .hint{background:#fafafa!important;border:1px solid #ddd!important}
  .memo{background:#f9f9f9!important;color:#000!important;border:1px solid #ccc!important;max-height:none!important}
  .bar>div{background:#555!important;color:#fff!important}
- tr.meu td{background:#fffbea!important;border-left:2px solid #ca8a04!important}
+ .detail-toggle summary{background:#eee!important;color:#000!important}
+ .detail-row{color:#000!important}
+ .detail-row .d-val{color:#333!important}
 }
 
 /* MOBILE */
@@ -316,6 +317,8 @@ body>*{position:relative;z-index:1}
  .card{padding:14px}
  .chapa-builder{padding:14px}
  .stat{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+ /* sc5 time grid 4→2x2 */
+ .card [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr!important}
  .stat .s{min-width:0;padding:10px 12px}
  .stat .s .v{font-size:16px}
  .stat .s .l{font-size:9px}
@@ -392,12 +395,12 @@ body>*{position:relative;z-index:1}
  <p class="lead">Escolha o tipo de eleição e o cargo que deseja simular.</p>
  <input type="text" id="scName" placeholder="Dê um nome ao cenário (ex: Governo SP 2026)" style="margin-bottom:20px;font-size:16px;padding:14px 18px">
  <div class="type-grid">
-  <div class="type-card" id="tcMaj" onclick="selectType('majoritario')">
+  <div class="type-card" id="tcMaj" onclick="selectType('majoritario')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
    <div class="ic">🏛</div>
    <h3>Majoritária</h3>
    <p>Uma chapa de partidos disputando juntos</p>
   </div>
-  <div class="type-card" id="tcProp" onclick="selectType('proporcional')">
+  <div class="type-card" id="tcProp" onclick="selectType('proporcional')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
    <div class="ic">🏢</div>
    <h3>Proporcional</h3>
    <p>Cada partido disputa individualmente</p>
@@ -579,8 +582,7 @@ auth.onAuthStateChanged(async user=>{
 });
 
 /* ========== INIT ========== */
-function initUF(){const s=document.getElementById('uf');UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;if(u==='SP')o.selected=true;s.appendChild(o);});}
-function updBT(){document.getElementById('bt').textContent=bancadaTotal();}
+function updBT(){const el=document.getElementById('bt');if(el)el.textContent=bancadaTotal();}
 function openBench(){openModal('mBench');renderBench();}
 function closeBench(){closeModal('mBench');updBT();}
 function resetBench(){if(!confirm('Restaurar bancada original?'))return;PARTIDOS.forEach(p=>state.bancada[p.s]=p.b);renderBench();updBT();}
@@ -624,7 +626,7 @@ function selectType(t){
  const wrap=document.getElementById('cargoButtons');wrap.style.display='';
  const cargos=t==='majoritario'?[{v:'governador',nm:'Governador',ic:'🏛'},{v:'presidente',nm:'Presidente',ic:'🇧🇷'},{v:'senador',nm:'Senador',ic:'⚖'}]:[{v:'depfed',nm:'Deputado Federal',ic:'🏢'},{v:'depest',nm:'Deputado Estadual',ic:'🏬'}];
  let h='<p style="color:var(--mut);font-size:13px;margin-bottom:12px">Selecione o cargo:</p><div style="display:flex;gap:10px;flex-wrap:wrap">';
- cargos.forEach(c=>{h+=`<div class="type-card" style="flex:1;min-width:140px;padding:16px;cursor:pointer" onclick="selectCargo('${c.v}')" id="cb_${c.v}"><div style="font-size:24px;margin-bottom:6px">${c.ic}</div><div style="font-size:15px;font-weight:800;font-family:'Sora',sans-serif">${c.nm}</div></div>`;});
+ cargos.forEach(c=>{h+=`<div class="type-card" style="flex:1;min-width:140px;padding:16px;cursor:pointer" onclick="selectCargo('${c.v}')" id="cb_${c.v}" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div style="font-size:24px;margin-bottom:6px">${c.ic}</div><div style="font-size:15px;font-weight:800;font-family:'Sora',sans-serif">${c.nm}</div></div>`;});
  h+='</div>';wrap.innerHTML=h;isDirty=true;
 }
 function selectCargo(v){
@@ -662,7 +664,7 @@ function renderMyChapa(){
   PARTIDOS.forEach(p=>{
    const on=state.minhaChapa.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;margin-left:6px">'+fed+'</span>':''}</div></div>`;
+   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;margin-left:6px">'+fed+'</span>':''}</div></div>`;
   });
   h+='</div>';
   c.innerHTML=h;
@@ -678,8 +680,6 @@ function togMyPartV2(s){
  }
  isDirty=true;renderMyChapa();
 }
-function togMyFed(fn){const ch=state.minhaChapa;if(ch.federacoes.includes(fn)){ch.federacoes=ch.federacoes.filter(x=>x!==fn);ch.partidos=ch.partidos.filter(p=>!FED[fn].includes(p));}else{ch.federacoes.push(fn);FED[fn].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});}isDirty=true;renderMyChapa();}
-function togMyPart(s){const ch=state.minhaChapa;if(ch.partidos.includes(s))ch.partidos=ch.partidos.filter(x=>x!==s);else ch.partidos.push(s);isDirty=true;renderMyChapa();}
 function pickMyParty(s,isFed){
  state.minhaChapa={partidos:[],federacoes:[],nome:''};
  if(isFed){state.minhaChapa.federacoes=[s];state.minhaChapa.partidos=[...FED[s]];state.minhaChapa.nome=s;}
@@ -844,10 +844,8 @@ function renderFullResult(){
  if(isProp)h+=`<div class="hint" style="margin-bottom:16px">O tempo abaixo é do <b>partido</b>. A distribuição desse tempo entre os candidatos é decisão interna da legenda.</div>`;
  h+=gerarInsights(k,r);
  h+=`<div class="stat">`;
- h+=`<div class="s"><div class="v has-tip" data-tip="Tempo total de cada bloco de HGPE\n(rádio ou TV) para este cargo">${bolo}s</div><div class="l">Bolo/bloco</div></div>`;
- h+=`<div class="s"><div class="v has-tip" data-tip="10% igualitário: ${fmtT(ig)}\n÷ ${n} chapas = ${fmtT(pig)}/chapa\n\n90% proporcional: ${fmtT(prop)}\ndistribuído pela bancada">${n}</div><div class="l">Chapas concorrentes</div></div>`;
- h+=`<div class="s"><div class="v">${r.bancadaTotal}</div><div class="l">Bancada total</div></div>`;
- h+=`<div class="s"><div class="v has-tip" data-tip="Total de inserções diárias\n(30s e 60s ao longo da programação)\nRádio + TV combinados">${fmtT(INSERT_DIA[k])}</div><div class="l">Inserções totais/dia</div></div>`;
+ h+=`<div class="s"><div class="v">${n}</div><div class="l">Concorrentes</div></div>`;
+ h+=`<div class="s"><div class="v">${fmtT(INSERT_DIA[k])}</div><div class="l">Inserções totais/dia</div></div>`;
  h+=`</div>`;
 
  // MAIN RESULTS — each unit as a card with expandable party detail
@@ -942,16 +940,28 @@ function prepPrint(){document.querySelectorAll('details').forEach(d=>d.open=true
 /* ========== CENARIOS ========== */
 function snapshot(){return JSON.parse(JSON.stringify({type:state.type,cargo:state.cargo,uf:state.uf,ano:state.ano,bancada:state.bancada,minhaChapa:state.minhaChapa,chapasAdversarias:state.chapasAdversarias,fase:state.fase}));}
 function applySnapshot(d){
+ // Migrate v6 format (chapas per cargo) to v7 (minhaChapa + chapasAdversarias)
+ if(d.chapas&&!d.minhaChapa){
+  // v6 scenario — pick first active cargo
+  const cargo=d.cargo||(d.ativos?Object.keys(d.ativos).find(k=>d.ativos[k]):'governador')||'governador';
+  const chs=d.chapas[cargo]||[];
+  const first=chs[0]||{partidos:[],federacoes:[],nome:''};
+  d.minhaChapa={partidos:first.partidos||[],federacoes:first.federacoes||[],nome:first.nome||''};
+  d.chapasAdversarias=chs.slice(1).map(c=>({partidos:c.partidos||[],federacoes:c.federacoes||[],nome:c.nome||'',ativo:c.ativo!==false}));
+  d.cargo=cargo;
+  d.type=CARGOS[cargo]?.semcol?'proporcional':'majoritario';
+ }
  state.type=d.type||null;state.cargo=d.cargo||'governador';state.uf=d.uf||'SP';state.ano=d.ano||'2022';
  state.bancada=d.bancada?{...d.bancada}:Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
  state.minhaChapa=d.minhaChapa?JSON.parse(JSON.stringify(d.minhaChapa)):{partidos:[],federacoes:[],nome:''};
  state.chapasAdversarias=d.chapasAdversarias?JSON.parse(JSON.stringify(d.chapasAdversarias)):[];
  state.fase=d.fase||'aproximado';
- document.getElementById('uf').value=state.uf;updBT();
+ updBT();
 }
 function openSave(){const n=document.getElementById('scName');document.getElementById('sName').value=n?n.value||activeScn.nome:'';openModal('mSave');}
 async function doSave(){
- const nome=document.getElementById('sName').value.trim();if(!nome){showToast('Dê um nome','err');return;}
+ let nome=document.getElementById('sName').value.trim();
+ if(!nome){const cargoNm=state.cargo&&CARGOS[state.cargo]?CARGOS[state.cargo].nm:'Cenário';nome=cargoNm+' — '+new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});document.getElementById('sName').value=nome;}
  const arr=loadStore(),now=new Date().toISOString();state.fase=state.chapasAdversarias.length>0?'completo':'aproximado';
  if(activeScn.id){const i=arr.findIndex(s=>s.id===activeScn.id);if(i>=0){arr[i]={...arr[i],nome,type:state.type,cargo:state.cargo,data:snapshot(),updatedAt:now};await saveScenarioToFirestore(arr[i]);}}
  else{const novo={id:'scn-'+Date.now(),nome,type:state.type,cargo:state.cargo,data:snapshot(),updatedAt:now};arr.push(novo);activeScn.id=novo.id;await saveScenarioToFirestore(novo);}
@@ -977,12 +987,48 @@ function impFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReade
 /* ========== COMPARAR ========== */
 function openCompare(){const all=loadStore();if(all.length<2){showToast('Salve 2+ cenários para comparar.','err');return;}const sA=document.getElementById('cmpA'),sB=document.getElementById('cmpB');sA.innerHTML='';sB.innerHTML='';all.forEach(s=>{const o=`<option value="${s.id}">${escapeHTML(s.nome)}</option>`;sA.innerHTML+=o;sB.innerHTML+=o;});if(all.length>1)sB.selectedIndex=1;openModal('mCompare');}
 function doCompare(){const idA=document.getElementById('cmpA').value,idB=document.getElementById('cmpB').value;if(idA===idB){showToast('Selecione cenários diferentes.','err');return;}closeModal('mCompare');renderComparativo(findScn(idA),findScn(idB));goStep(6);}
-function renderComparativo(sA,sB){if(!sA||!sB)return;document.getElementById('cmpContent').innerHTML='<div class="hint">Comparação em desenvolvimento.</div>';}
+function renderComparativo(sA,sB){
+ if(!sA||!sB)return;
+ const dA=sA.data,dB=sB.data;
+ if(!dA||!dB||dA.cargo!==dB.cargo){document.getElementById('cmpContent').innerHTML='<div class="hint warn">Os cenários precisam ser do mesmo cargo para comparar.</div>';return;}
+ const k=dA.cargo,cfg=CARGOS[k];if(!cfg){document.getElementById('cmpContent').innerHTML='<div class="hint warn">Cargo não reconhecido.</div>';return;}
+ // Calc each
+ function calcFrom(d){
+  const allCh=[{...d.minhaChapa,meu:true},...(d.chapasAdversarias||[]).filter(c=>c.ativo!==false&&c.partidos&&c.partidos.length>0)];
+  const units=[];const banc=d.bancada||Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
+  allCh.forEach(c=>{if(cfg.semcol){const fp=(c.federacoes||[]).flatMap(f=>FED[f]||[]);(c.federacoes||[]).forEach(fn=>{const pts=(FED[fn]||[]).filter(p=>(c.partidos||[]).includes(p));units.push({nome:c.nome||fn,bancada:pts.reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});});(c.partidos||[]).filter(p=>!fp.includes(p)).forEach(p=>units.push({nome:c.nome||p,bancada:banc[p]||0,meu:!!c.meu}));}else{units.push({nome:c.nome||c.partidos.join('+'),bancada:(c.partidos||[]).reduce((a,p)=>a+(banc[p]||0),0),meu:!!c.meu});}});
+  const n=units.length,bolo=cfg.bolo,ig=bolo*0.1,prop=bolo*0.9,bt=units.reduce((a,u)=>a+u.bancada,0),pig=n?ig/n:0;
+  units.forEach(u=>{u.tB=(n?pig:0)+(bt>0?prop*u.bancada/bt:0);});
+  return units;
+ }
+ const uA=calcFrom(dA),uB=calcFrom(dB);
+ const cargoNm=cfg.nm;
+ let h=`<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+  <div class="tag" style="background:rgba(63,59,255,.2);border-color:var(--purple);color:#C7C4FF;font-size:13px;padding:6px 14px"><b>A:</b> ${escapeHTML(sA.nome)}</div>
+  <div class="tag" style="background:rgba(250,204,21,.15);border-color:var(--gold);color:#FDE68A;font-size:13px;padding:6px 14px"><b>B:</b> ${escapeHTML(sB.nome)}</div></div>`;
+ h+=`<h3 style="font-size:16px;font-weight:800;font-family:'Sora',sans-serif;margin-bottom:14px">${cfg.ic} ${cargoNm}</h3>`;
+ // Find meu in each
+ const meuA=uA.find(u=>u.meu),meuB=uB.find(u=>u.meu);
+ if(meuA&&meuB){
+  const diff=meuB.tB-meuA.tB;
+  h+=`<div class="result-cards"><div class="r-card"><div class="val" style="color:#C7C4FF">${fmtT(meuA.tB)}</div><div class="lbl">Cenário A — por bloco</div></div><div class="r-card"><div class="val" style="color:var(--gold)">${fmtT(meuB.tB)}</div><div class="lbl">Cenário B — por bloco</div></div></div>`;
+  h+=`<div class="hint ${diff>0?'gold':diff<0?'':'gold'}" style="margin-top:12px;text-align:center"><b>Diferença: ${diff>0?'+':''}${fmtT(diff)}</b> por bloco ${diff>0?'a favor de B':diff<0?'a favor de A':'— empate'}</div>`;
+ }
+ h+=`<div style="margin-top:20px"><div style="display:grid;grid-template-columns:1fr 100px 100px 80px;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--mut);font-size:11px;font-weight:700;text-transform:uppercase"><div>Unidade</div><div style="text-align:right">Cenário A</div><div style="text-align:right">Cenário B</div><div style="text-align:right">Dif.</div></div>`;
+ const nomes=new Set([...uA.map(u=>u.nome),...uB.map(u=>u.nome)]);
+ [...nomes].sort().forEach(nm=>{
+  const a=uA.find(u=>u.nome===nm),b=uB.find(u=>u.nome===nm);
+  const tA=a?a.tB:0,tB_=b?b.tB:0,diff=tB_-tA;
+  h+=`<div style="display:grid;grid-template-columns:1fr 100px 100px 80px;gap:8px;padding:8px 0;border-bottom:1px solid rgba(42,42,74,.3);font-size:13px;align-items:center"><div><b>${escapeHTML(nm)}</b></div><div style="text-align:right">${a?fmtT(tA):'—'}</div><div style="text-align:right">${b?fmtT(tB_):'—'}</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;${diff>0.5?'background:rgba(34,197,94,.15);color:#86EFAC':diff<-0.5?'background:rgba(239,68,68,.15);color:#FCA5A5':'color:var(--mut)'}">${diff>0.5?'+'+fmtT(diff):diff<-0.5?'-'+fmtT(Math.abs(diff)):'='}</span></div></div>`;
+ });
+ h+=`</div>`;
+ document.getElementById('cmpContent').innerHTML=h;
+}
 
 /* ========== PROFILE ========== */
 async function openProfile(){if(!currentUser)return;try{const d=await db.collection('users').doc(currentUser.uid).get();const p=d.exists?d.data():{};document.getElementById('profName').value=p.nome||currentUser.displayName||'';document.getElementById('profDDD').value=p.ddd||'';document.getElementById('profPhone').value=p.phone||'';document.getElementById('profUF').value=p.uf||'';document.getElementById('profCity').value=p.city||'';document.getElementById('profEmail').textContent=currentUser.email||'';}catch(e){}const sel=document.getElementById('profUF');if(sel.options.length<=1)UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});openModal('mProfile');}
 async function saveProfile(){if(!currentUser)return;const nome=document.getElementById('profName').value.trim();if(!nome){showToast('Preencha o nome','err');return;}try{await currentUser.updateProfile({displayName:nome});await db.collection('users').doc(currentUser.uid).set({nome,ddd:document.getElementById('profDDD').value.trim(),phone:document.getElementById('profPhone').value.trim(),uf:document.getElementById('profUF').value,city:document.getElementById('profCity').value.trim(),email:currentUser.email},{merge:true});document.getElementById('userName').textContent=nome;closeModal('mProfile');showToast('Perfil atualizado');}catch(e){showToast('Erro','err');}}
 
 /* ========== BOOT ========== */
-initUF();updBT();
+updBT();
 </script></body></html>
