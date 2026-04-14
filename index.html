@@ -687,10 +687,10 @@ function renderMyChapa(){
   h+=`<input type="text" placeholder="Buscar partido..." oninput="this.dataset.q=this.value;renderMyChapa()" style="margin-bottom:10px" id="mySearch">`;
   h+=`<div class="part-grid">`;
   const q=(document.getElementById('mySearch')?.dataset?.q||'').toLowerCase();
-  PARTIDOS.filter(p=>!q||p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).forEach(p=>{
+  [...PARTIDOS].filter(p=>!q||p.s.toLowerCase().includes(q)||p.n.toLowerCase().includes(q)).sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=ch.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')"><b>${p.s}</b>${fed?'<span style="font-size:8px;color:var(--gold);margin-left:4px">'+fed+'</span>':''}</div>`;
+   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')" style="display:flex;justify-content:space-between;align-items:center"><b>${p.s}</b>${fed?'<span style="font-size:8px;color:var(--gold);white-space:nowrap">'+fed+'</span>':''}</div>`;
   });
   h+=`</div></div>`;
   c.innerHTML=h;
@@ -699,10 +699,10 @@ function renderMyChapa(){
   document.getElementById('sc2Lead').textContent='Selecione o partido ou federação do seu candidato.';
   let h='<input type="text" placeholder="Buscar partido..." oninput="filterPartyPicker(this.value)" style="margin-bottom:16px">';
   h+='<div class="party-picker" id="partyPicker">';
-  PARTIDOS.forEach(p=>{
+  [...PARTIDOS].sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=state.minhaChapa.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="sig">${p.s}</div><div class="info"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;margin-left:6px">'+fed+'</span>':''}</div></div>`;
+   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="pickMyParty('${p.s}',false)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="sig">${p.s}</div><div class="info" style="display:flex;justify-content:space-between;align-items:center;flex:1"><b>${escapeHTML(p.n)}</b>${fed?'<span style="color:var(--gold);font-size:10px;white-space:nowrap;text-align:right">'+fed+'</span>':''}</div></div>`;
   });
   h+='</div>';
   c.innerHTML=h;
@@ -891,7 +891,7 @@ function renderRivalChapa(ch,idx){
  const fedsUsadas=new Set();state.chapasAdversarias.forEach((c,ci)=>{if(ci!==idx)c.federacoes.forEach(f=>fedsUsadas.add(f));});state.minhaChapa.federacoes.forEach(f=>fedsUsadas.add(f));
  Object.keys(FED).forEach(fn=>{const on=ch.federacoes.includes(fn),dis=fedsUsadas.has(fn)&&!on;h+=`<div class="fed-chip${on?' on':''}" style="${dis?'opacity:.25':''}" onclick="${dis?'':`togRivalFed(${idx},'${fn}')`}"><b>${fn}</b><small>${FED[fn].join('+')}</small></div>`;});
  h+=`</div><label>Partidos</label><div class="part-grid">`;
- PARTIDOS.forEach(p=>{const on=ch.partidos.includes(p.s),emFed=fedParts.includes(p.s),dis=(usados.has(p.s)&&!on)||emFed;
+ [...PARTIDOS].sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{const on=ch.partidos.includes(p.s),emFed=fedParts.includes(p.s),dis=(usados.has(p.s)&&!on)||emFed;
   h+=`<div class="part${on?' on':''}${dis?' dis':''}${emFed?' fed':''}" onclick="${dis?'':`togRivalPart(${idx},'${p.s}')`}"><b>${p.s}</b></div>`;});
  h+=`</div></div>`;return h;
 }
