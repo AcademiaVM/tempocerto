@@ -703,7 +703,7 @@ function renderApproxResult(){
  const insPropDia=insProp;
  const insPropPeriodo=insProp*dias;
  const numInsercoes=Math.floor(insPropPeriodo/30);
- const numProgramas=dias*4;
+ const blocosTV=dias*2,blocosRadio=dias*2;
  const cargoNome=k==='governador'?'Governo':k==='presidente'?'Presidência':k==='senador'?'Senado':k==='depfed'?'Deputado Federal':'Deputado Estadual';
  const isProp=CARGOS[k].semcol;
 
@@ -720,13 +720,14 @@ function renderApproxResult(){
  h+=`<div class="r-card big" style="border:2px solid var(--warn)"><div class="val" style="font-size:40px;color:var(--warn)">${fmtT(insPropDia)}</div><div class="lbl">Tempo de inserções por dia</div></div>`;
  h+=`</div>`;
 
- // Totais no período
+ // Totais no período — programas
  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">`;
  h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Programas no período</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:#C7C4FF">${fmtT(tPropCampanha)}</div><div style="font-size:11px;color:var(--mut)">tempo total de TV</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:#86EFAC;margin-top:6px">${fmtT(tPropCampanha)}</div><div style="font-size:11px;color:var(--mut)">tempo total de rádio</div>`;
- h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">${numProgramas} programas</div><div style="font-size:10px;color:var(--mut)">(${dias} dias × 4 blocos)</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:#C7C4FF">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">tempo total de TV (${blocosTV} exibições)</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:#86EFAC;margin-top:6px">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">tempo total de rádio (${blocosRadio} exibições)</div>`;
+ h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">${blocosTV+blocosRadio} exibições</div><div style="font-size:10px;color:var(--mut)">(${blocosTV} TV + ${blocosRadio} rádio)</div>`;
  h+=`</div>`;
+ // Totais no período — inserções
  h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Inserções no período</div>`;
  h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--mut)">tempo total de inserções</div>`;
  h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">~${numInsercoes} inserções</div><div style="font-size:10px;color:var(--mut)">(de 30 segundos cada)</div>`;
