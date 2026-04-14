@@ -829,6 +829,17 @@ function renderApproxResult(){
   }
   h+=`</div></details>`;
  }
+ // Partidos sem cláusula — info fixa para proporcional (mesmo com 1 partido)
+ if(isProp){
+  const todosSemCl=PARTIDOS.filter(p=>!p.cl);
+  if(todosSemCl.length>0){
+   h+=`<details class="detail-toggle" style="margin-top:16px"><summary>ℹ️ Partidos sem direito a tempo de TV em 2026 (${todosSemCl.length})</summary><div class="detail-body">`;
+   h+=`<div style="font-size:12px;color:var(--mut);margin-bottom:10px">Estes partidos não atingiram a cláusula de desempenho nas eleições de 2022 (EC 97/2017) e não recebem tempo de TV e rádio em 2026, mesmo lançando candidatos.</div>`;
+   todosSemCl.forEach(p=>{h+=`<div class="detail-row" style="opacity:.5"><span class="d-name">${escapeHTML(p.s)}</span><span style="font-size:10px;color:var(--dim)">sem cláusula</span></div>`;});
+   h+=`</div></details>`;
+  }
+ }
+
  h+=`<div class="bifurcation" style="margin-top:20px"><button class="btn lg" onclick="goStep(4)">${isProp?'Ajustar quem disputa':'Calcular com todas as chapas'} →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim</button></div>`;
  document.getElementById('sc3Content').innerHTML=h;
 }
