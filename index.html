@@ -387,6 +387,7 @@ body>*{position:relative;z-index:1}
  </div>
  <div class="home-saved" id="homeSaved"></div>
  <div id="homeWeek"></div>
+ <div class="hint" style="margin-top:20px;font-size:12px;text-align:center;opacity:.8">⚠ Os cálculos apresentados são aproximados e têm caráter educativo. Consulte seu advogado eleitoral e o TRE/TSE para validar os números antes de tomar decisões.</div>
 </div>
 
 <!-- sc1: TIPO DE ELEICAO -->
@@ -709,10 +710,14 @@ function renderMyChapa(){
 }
 function togMyPartV2(s){
  const ch=state.minhaChapa;
- if(ch.partidos.includes(s)){ch.partidos=ch.partidos.filter(x=>x!==s);ch.federacoes=ch.federacoes.filter(fn=>!FED[fn]||FED[fn].some(p=>ch.partidos.includes(p)));}
- else{ch.partidos.push(s);
-  // Auto-add federation members
-  const fed=getFedTag(s);
+ const fed=getFedTag(s);
+ if(ch.partidos.includes(s)){
+  // Desmarcar: se é de federação, desmarcar TODOS os membros
+  if(fed){ch.federacoes=ch.federacoes.filter(fn=>fn!==fed);FED[fed].forEach(p=>{ch.partidos=ch.partidos.filter(x=>x!==p);});}
+  else{ch.partidos=ch.partidos.filter(x=>x!==s);}
+ }else{
+  // Marcar: se é de federação, marcar TODOS os membros
+  ch.partidos.push(s);
   if(fed&&!ch.federacoes.includes(fed)){ch.federacoes.push(fed);FED[fed].forEach(p=>{if(!ch.partidos.includes(p))ch.partidos.push(p);});}
  }
  isDirty=true;renderMyChapa();
@@ -747,35 +752,37 @@ function renderApproxResult(){
  const cargoNome=k==='governador'?'Governo':k==='presidente'?'Presidência':k==='senador'?'Senado':k==='depfed'?'Deputado Federal':'Deputado Estadual';
  const isProp=CARGOS[k].semcol;
 
+ // Cabeçalho: turno + cargo numa linha, sem badge
  let h=`<div style="text-align:center;margin-bottom:24px">`;
  h+=`<h2 class="title">Confira o seu tempo de Rádio e TV</h2>`;
- h+=`<div style="color:var(--mut);font-size:14px;margin-top:4px">1º Turno</div>`;
- h+=`<div style="font-size:20px;font-weight:800;font-family:'Sora',sans-serif;margin-top:4px">${cargoNome} 2026</div>`;
- h+=`<span class="badge-approx" style="margin-top:10px;display:inline-block">Tempo mínimo garantido</span>`;
+ h+=`<div style="font-size:20px;font-weight:800;font-family:'Sora',sans-serif;margin-top:8px">1º Turno — ${cargoNome} 2026</div>`;
  h+=`</div>`;
 
- // Cards principais — DESTAQUE para bloco e inserções
+ // Cards principais — 2 colunas: Programa e Inserções
  h+=`<div class="result-cards">`;
  h+=`<div class="r-card big" style="border:2px solid var(--gold)"><div class="val gold" style="font-size:40px">${fmtT(tProp)}</div><div class="lbl">📺 Tempo por programa (bloco)</div></div>`;
  h+=`<div class="r-card big" style="border:2px solid var(--warn)"><div class="val" style="font-size:40px;color:var(--warn)">${fmtT(insPropDia)}</div><div class="lbl">Tempo de inserções por dia</div></div>`;
  h+=`</div>`;
 
- // Totais no período — programas
+ // Hint: tempo mínimo + sobras — LOGO ABAIXO dos cards
+ if(isProp)h+=`<div class="hint" style="margin-top:12px">O tempo acima é do <b>partido</b>. A distribuição desse tempo entre os candidatos do partido é decisão interna da legenda.</div>`;
+ h+=`<div class="hint gold" style="margin-top:${isProp?'8':'12'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas) e as possíveis sobras de tempo que são redistribuídas.</div>`;
+
+ // Totais no período — 2 colunas alinhadas com os cards
  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">`;
- h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Programas no período</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:#C7C4FF">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">tempo total de TV (${blocosTV} exibições)</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:#86EFAC;margin-top:6px">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--mut)">tempo total de rádio (${blocosRadio} exibições)</div>`;
- h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">${blocosTV+blocosRadio} exibições</div><div style="font-size:10px;color:var(--mut)">(${blocosTV} TV + ${blocosRadio} rádio)</div>`;
+ // Coluna programas
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;font-weight:700">Programas no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--gold)">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--gold);opacity:.7">Tempo total de TV no período eleitoral (${blocosTV} exibições)</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--gold);margin-top:8px">${fmtT(tProp*2*dias)}</div><div style="font-size:11px;color:var(--gold);opacity:.7">Tempo total de rádio no período eleitoral (${blocosRadio} exibições)</div>`;
  h+=`</div>`;
- // Totais no período — inserções
- h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Inserções no período</div>`;
- h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--mut)">tempo total de inserções</div>`;
- h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;font-weight:800">~${numInsercoes} inserções</div><div style="font-size:10px;color:var(--mut)">(de 30 segundos cada)</div>`;
+ // Coluna inserções
+ h+=`<div class="card" style="text-align:center"><div style="font-size:11px;color:var(--warn);text-transform:uppercase;margin-bottom:8px;font-weight:700">Inserções no período</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--warn)">${fmtT(insPropPeriodo)}</div><div style="font-size:11px;color:var(--warn);opacity:.7">Tempo total de inserções no período eleitoral</div>`;
+ h+=`<div style="font-size:20px;font-weight:800;color:var(--warn);margin-top:8px;letter-spacing:.05em">Aproximadamente ${numInsercoes} inserções</div><div style="font-size:11px;color:var(--warn);opacity:.7">de 30 segundos cada</div>`;
  h+=`</div></div>`;
 
- // Regra dos 6 maiores — aviso e detalhamento
+ // Detalhamento por partido (com aviso dos 6 maiores DENTRO)
  if(!isProp&&partidosComCl.length>1){
-  // Agrupar por federação para determinar unidades
   const unitsMap=new Map();
   partidosComCl.forEach(p=>{let key=p;for(const[fn,members]of Object.entries(FED)){if(members.includes(p)){key=fn;break;}}
    if(!unitsMap.has(key))unitsMap.set(key,{nome:key,partidos:[],bancada:0});
@@ -785,12 +792,11 @@ function renderApproxResult(){
   const top6=units.slice(0,6);
   const fora=units.slice(6);
 
+  h+=`<details class="detail-toggle" style="margin-top:16px"><summary>📊 Ver distribuição por partido/federação</summary><div class="detail-body">`;
   if(temMaisDe6){
-   h+=`<div class="hint warn" style="margin-top:16px">⚠ Sua chapa tem <b>${units.length} partidos/federações</b>. Pela lei (Lei 13.165/2015), apenas os <b>6 maiores</b> contam para o cálculo do tempo de TV e rádio. Os demais fazem parte da coligação mas não somam bancada para o tempo.</div>`;
+   h+=`<div class="hint warn" style="margin-bottom:12px">Sua chapa tem <b>${units.length} partidos/federações</b>. Pela lei, apenas os <b>6 maiores</b> contam para o cálculo do tempo. Os demais fazem parte da coligação mas não somam para o tempo.</div>`;
+   h+=`<div style="font-size:11px;color:var(--ok);font-weight:700;margin-bottom:8px;text-transform:uppercase">✓ Contabilizados (6 maiores)</div>`;
   }
-
-  h+=`<details class="detail-toggle" style="margin-top:12px"><summary>📊 Ver distribuição por partido/federação</summary><div class="detail-body">`;
-  if(temMaisDe6)h+=`<div style="font-size:11px;color:var(--ok);font-weight:700;margin-bottom:8px;text-transform:uppercase">✓ Contabilizados (6 maiores)</div>`;
   top6.forEach(u=>{
    const share=suaBancada>0?u.bancada/suaBancada:0;const t=tProp*share;
    h+=`<div class="detail-row"><span class="d-name">${escapeHTML(u.nome)}${u.partidos.length>1?' <span style="font-size:10px;color:var(--mut)">('+u.partidos.join(', ')+')</span>':''}</span><span class="d-val">${fmtT(t)}/bloco</span></div>`;
@@ -810,9 +816,6 @@ function renderApproxResult(){
   });
   h+=`</div></details>`;
  }
-
- if(isProp)h+=`<div class="hint" style="margin-top:16px">O tempo acima é do <b>partido</b>. A distribuição desse tempo entre os candidatos do partido é decisão interna da legenda.</div>`;
- h+=`<div class="hint gold" style="margin-top:${isProp?'8':'16'}px">Este é o seu <b>tempo mínimo garantido</b>. O tempo final será maior, pois inclui a parte igualitária (dividida entre todas as chapas) e as possíveis sobras de tempo que são redistribuídas.</div>`;
  h+=`<div class="bifurcation" style="margin-top:20px"><button class="btn lg" onclick="goStep(4)">${isProp?'Ajustar quem disputa':'Calcular com todas as chapas'} →</button><button class="btn ghost lg" onclick="openSave()">Salvar assim</button></div>`;
  document.getElementById('sc3Content').innerHTML=h;
 }
