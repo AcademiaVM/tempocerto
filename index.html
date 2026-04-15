@@ -754,8 +754,17 @@ function togMyPartV2(s){
 }
 function pickMyParty(s,isFed){
  state.minhaChapa={partidos:[],federacoes:[],nome:''};
- if(isFed){state.minhaChapa.federacoes=[s];state.minhaChapa.partidos=[...FED[s]];state.minhaChapa.nome=s;}
- else{state.minhaChapa.partidos=[s];state.minhaChapa.nome=s;}
+ if(isFed){
+  state.minhaChapa.federacoes=[s];state.minhaChapa.partidos=[...FED[s]];state.minhaChapa.nome=s;
+ }else{
+  // Se o partido pertence a uma federação, selecionar a federação inteira
+  const fed=getFedTag(s);
+  if(fed){
+   state.minhaChapa.federacoes=[fed];state.minhaChapa.partidos=[...FED[fed]];state.minhaChapa.nome=s+' ('+fed+')';
+  }else{
+   state.minhaChapa.partidos=[s];state.minhaChapa.nome=s;
+  }
+ }
  isDirty=true;renderMyChapa();
 }
 function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll('.party-pick').forEach(el=>{const sig=el.querySelector('.sig')?.textContent?.toLowerCase()||'';el.style.display=(!ql||sig.startsWith(ql))?'':'none';});}
