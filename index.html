@@ -382,7 +382,7 @@ body>*{position:relative;z-index:1}
 <main style="display:none" id="appMain">
 <!-- sc0: HOME -->
 <div class="screen on" id="sc0">
- <div class="home-hero" onclick="goStep(1)">
+ <div class="home-hero" onclick="newScenario();goStep(1)">
   <div class="plus">+</div>
   <h2>Criar novo cenário</h2>
   <p>Descubra quanto tempo de TV e rádio a sua chapa vai ter</p>
@@ -519,7 +519,18 @@ function translateAuthError(c){const m={'auth/email-already-in-use':'Este e-mail
 function showAuthErr(m){document.getElementById('authErr').textContent=m;}
 function toggleAuth(){const l=document.getElementById('authFormLogin'),s=document.getElementById('authFormSignup');if(l.style.display==='none'){l.style.display='';s.style.display='none';}else{l.style.display='none';s.style.display='';}showAuthErr('');}
 async function doEmailAuth(){showAuthErr('');const e=document.getElementById('authEmail').value.trim(),p=document.getElementById('authPass').value;if(!e||!p){showAuthErr('Preencha e-mail e senha.');return;}try{await auth.signInWithEmailAndPassword(e,p);}catch(err){showAuthErr(translateAuthError(err.code));}}
-async function doEmailSignup(){showAuthErr('');const n=document.getElementById('authName').value.trim(),e=document.getElementById('authEmailS').value.trim(),p=document.getElementById('authPassS').value;if(!n||!e||!p){showAuthErr('Preencha nome, e-mail e senha.');return;}try{const c=await auth.createUserWithEmailAndPassword(e,p);await c.user.updateProfile({displayName:n});const ddd=document.getElementById('authDDD').value.trim(),phone=document.getElementById('authPhone').value.trim(),uf=document.getElementById('authUF').value,city=document.getElementById('authCity').value.trim();await db.collection('users').doc(c.user.uid).set({nome:n,email:e,ddd,phone,uf,city,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(err){showAuthErr(translateAuthError(err.code));}}
+async function doEmailSignup(){showAuthErr('');
+ const n=document.getElementById('authName').value.trim(),e=document.getElementById('authEmailS').value.trim(),p=document.getElementById('authPassS').value;
+ const ddd=document.getElementById('authDDD').value.trim(),phone=document.getElementById('authPhone').value.trim(),uf=document.getElementById('authUF').value,city=document.getElementById('authCity').value.trim();
+ if(!n){showAuthErr('Preencha seu nome.');return;}
+ if(!e){showAuthErr('Preencha seu e-mail.');return;}
+ if(!p||p.length<6){showAuthErr('Senha deve ter no mínimo 6 caracteres.');return;}
+ if(!ddd||!phone){showAuthErr('Preencha DDD e telefone.');return;}
+ if(!uf){showAuthErr('Selecione seu estado.');return;}
+ if(!city){showAuthErr('Preencha sua cidade.');return;}
+ try{const c=await auth.createUserWithEmailAndPassword(e,p);await c.user.updateProfile({displayName:n});
+  await db.collection('users').doc(c.user.uid).set({nome:n,email:e,ddd,phone,uf,city,profileComplete:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ }catch(err){showAuthErr(translateAuthError(err.code));}}
 async function doGoogleAuth(){showAuthErr('');try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(err){showAuthErr(translateAuthError(err.code));}}
 async function doForgotPassword(){showAuthErr('');const e=document.getElementById('authEmail').value.trim();if(!e){showAuthErr('Digite seu e-mail acima.');return;}try{await auth.sendPasswordResetEmail(e);alert('E-mail de recuperação enviado para '+e);}catch(err){showAuthErr(translateAuthError(err.code));}}
 function doLogout(){auth.signOut();}
@@ -614,10 +625,26 @@ function loadStore(){return cachedScenarios;}
 function saveStore(arr){cachedScenarios=arr;localStorage.setItem(STORE_KEY,JSON.stringify(arr));}
 
 /* ========== AUTH STATE ========== */
-(()=>{const sel=document.getElementById('authUF');UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});})();
+(()=>{const sel=document.getElementById('authUF');UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});
+ sel.addEventListener('change',()=>loadCidades(sel.value,'authCity'));
+})();
+async function loadCidades(uf,inputId){
+ const inp=document.getElementById(inputId);if(!inp||!uf)return;
+ try{const r=await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/'+uf+'/municipios?orderBy=nome');const cidades=await r.json();
+  let dl=document.getElementById(inputId+'_dl');
+  if(!dl){dl=document.createElement('datalist');dl.id=inputId+'_dl';document.body.appendChild(dl);inp.setAttribute('list',inputId+'_dl');}
+  dl.innerHTML='';cidades.forEach(c=>{const o=document.createElement('option');o.value=c.nome;dl.appendChild(o);});
+ }catch(e){console.error('IBGE:',e);}
+}
+async function checkProfileComplete(){
+ if(!currentUser)return;
+ try{const doc=await db.collection('users').doc(currentUser.uid).get();
+  if(!doc.exists||!doc.data().profileComplete){openProfile();showToast('Complete seu cadastro para continuar');}
+ }catch(e){}
+}
 auth.onAuthStateChanged(async user=>{
  currentUser=user;
- if(user){document.getElementById('authScreen').style.display='none';document.getElementById('appHeader').style.display='';document.getElementById('appMain').style.display='';document.getElementById('userName').textContent=user.displayName||user.email;showLoading('Carregando seus cenários...');await loadScenariosFromFirestore();hideLoading();renderHome();}
+ if(user){document.getElementById('authScreen').style.display='none';document.getElementById('appHeader').style.display='';document.getElementById('appMain').style.display='';document.getElementById('userName').textContent=user.displayName||user.email;showLoading('Carregando seus cenários...');await loadScenariosFromFirestore();hideLoading();renderHome();await checkProfileComplete();}
  else{hideLoading();document.getElementById('authScreen').style.display='';document.getElementById('appHeader').style.display='none';document.getElementById('appMain').style.display='none';}
 });
 
@@ -1063,6 +1090,19 @@ function renderWeekType(){
 function prepPrint(){document.querySelectorAll('details').forEach(d=>d.open=true);setTimeout(()=>{window.print();},250);}
 
 /* ========== CENARIOS ========== */
+function newScenario(){
+ state.type=null;state.cargo=null;state.uf='SP';state.ano='2022';
+ state.bancada=Object.fromEntries(PARTIDOS.map(p=>[p.s,p.b]));
+ state.minhaChapa={partidos:[],federacoes:[],nome:''};
+ state.chapasAdversarias=[];state.fase='aproximado';state.busca='';
+ activeScn={id:null,nome:'',saved:false};isDirty=false;
+ // Reset UI do sc1
+ const tc1=document.getElementById('tcMaj'),tc2=document.getElementById('tcProp');
+ if(tc1)tc1.classList.remove('on');if(tc2)tc2.classList.remove('on');
+ const cb=document.getElementById('cargoButtons');if(cb){cb.style.display='none';cb.innerHTML='';}
+ const bn=document.getElementById('btnNext1');if(bn)bn.style.display='none';
+ const sn=document.getElementById('scName');if(sn)sn.value='';
+}
 function snapshot(){return JSON.parse(JSON.stringify({type:state.type,cargo:state.cargo,uf:state.uf,ano:state.ano,bancada:state.bancada,minhaChapa:state.minhaChapa,chapasAdversarias:state.chapasAdversarias,fase:state.fase}));}
 function applySnapshot(d){
  // Migrate v6 format (chapas per cargo) to v7 (minhaChapa + chapasAdversarias)
@@ -1174,8 +1214,38 @@ function renderComparativo(sA,sB){
 }
 
 /* ========== PROFILE ========== */
-async function openProfile(){if(!currentUser)return;try{const d=await db.collection('users').doc(currentUser.uid).get();const p=d.exists?d.data():{};document.getElementById('profName').value=p.nome||currentUser.displayName||'';document.getElementById('profDDD').value=p.ddd||'';document.getElementById('profPhone').value=p.phone||'';document.getElementById('profUF').value=p.uf||'';document.getElementById('profCity').value=p.city||'';document.getElementById('profEmail').textContent=currentUser.email||'';}catch(e){}const sel=document.getElementById('profUF');if(sel.options.length<=1)UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});openModal('mProfile');}
-async function saveProfile(){if(!currentUser)return;const nome=document.getElementById('profName').value.trim();if(!nome){showToast('Preencha o nome','err');return;}try{await currentUser.updateProfile({displayName:nome});await db.collection('users').doc(currentUser.uid).set({nome,ddd:document.getElementById('profDDD').value.trim(),phone:document.getElementById('profPhone').value.trim(),uf:document.getElementById('profUF').value,city:document.getElementById('profCity').value.trim(),email:currentUser.email},{merge:true});document.getElementById('userName').textContent=nome;closeModal('mProfile');showToast('Perfil atualizado');}catch(e){showToast('Erro','err');}}
+async function openProfile(){
+ if(!currentUser)return;
+ try{const d=await db.collection('users').doc(currentUser.uid).get();const p=d.exists?d.data():{};
+  document.getElementById('profName').value=p.nome||currentUser.displayName||'';
+  document.getElementById('profDDD').value=p.ddd||'';
+  document.getElementById('profPhone').value=p.phone||'';
+  document.getElementById('profUF').value=p.uf||'';
+  document.getElementById('profCity').value=p.city||'';
+  document.getElementById('profEmail').textContent=currentUser.email||'';
+ }catch(e){}
+ const sel=document.getElementById('profUF');
+ if(sel.options.length<=1)UFS.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o);});
+ sel.onchange=()=>loadCidades(sel.value,'profCity');
+ if(sel.value)loadCidades(sel.value,'profCity');
+ openModal('mProfile');
+}
+async function saveProfile(){
+ if(!currentUser)return;
+ const nome=document.getElementById('profName').value.trim();
+ const ddd=document.getElementById('profDDD').value.trim();
+ const phone=document.getElementById('profPhone').value.trim();
+ const uf=document.getElementById('profUF').value;
+ const city=document.getElementById('profCity').value.trim();
+ if(!nome){showToast('Preencha o nome','err');return;}
+ if(!ddd||!phone){showToast('Preencha DDD e telefone','err');return;}
+ if(!uf){showToast('Selecione seu estado','err');return;}
+ if(!city){showToast('Preencha sua cidade','err');return;}
+ try{await currentUser.updateProfile({displayName:nome});
+  await db.collection('users').doc(currentUser.uid).set({nome,ddd,phone,uf,city,email:currentUser.email,profileComplete:true},{merge:true});
+  document.getElementById('userName').textContent=nome;closeModal('mProfile');showToast('Perfil atualizado');
+ }catch(e){showToast('Erro ao salvar','err');}
+}
 
 /* ========== BOOT ========== */
 updBT();
