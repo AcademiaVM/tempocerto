@@ -848,19 +848,22 @@ function renderApproxResult(){
    semCl.forEach(p=>{h+=`<div class="detail-row" style="opacity:.4"><span class="d-name">${escapeHTML(p)}</span><span class="d-val" style="color:var(--dim);font-size:10px">sem cláusula</span></div>`;});
   }
   h+=`</div></details>`;
+ }else if(isProp&&partidosComCl.length>1){
+  // Partido federado: mostrar distribuição entre membros da federação
+  const fedNome=(ch.federacoes||[])[0]||'';
+  h+=`<details class="detail-toggle" style="margin-top:16px"><summary>📊 Ver distribuição por partido (${fedNome||'federação'})</summary><div class="detail-body">`;
+  if(fedNome)h+=`<div style="font-size:12px;color:var(--mut);margin-bottom:10px">O tempo da federação <b style="color:var(--gold)">${fedNome}</b> é dividido internamente entre seus partidos, proporcionalmente à bancada de cada um.</div>`;
+  [...partidosComCl].sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0)).forEach(p=>{
+   const pb=state.bancada[p]||0;const share=suaBancada>0?pb/suaBancada:0;const tPart=tProp*share;
+   h+=`<div class="detail-row"><span class="d-name">${escapeHTML(p)}</span><span class="d-val">${fmtT(tPart)}/bloco</span></div>`;
+  });
+  h+=`</div></details>`;
  }else if(isProp&&ch.partidos.length>1){
   h+=`<details class="detail-toggle" style="margin-top:16px"><summary>📊 Ver distribuição por partido</summary><div class="detail-body">`;
-  const comCl=[...ch.partidos].filter(p=>temClausula(p)).sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0));
-  const semCl2=[...ch.partidos].filter(p=>!temClausula(p));
-  comCl.forEach(p=>{
+  [...ch.partidos].filter(p=>temClausula(p)).sort((a,b)=>(state.bancada[b]||0)-(state.bancada[a]||0)).forEach(p=>{
    const pb=state.bancada[p]||0;const share=suaBancada>0?pb/suaBancada:0;const tPart=tProp*share;
-   h+=`<div class="detail-row"><span class="d-name">${p}</span><span class="d-val">${fmtT(tPart)}/bloco</span></div>`;
+   h+=`<div class="detail-row"><span class="d-name">${escapeHTML(p)}</span><span class="d-val">${fmtT(tPart)}/bloco</span></div>`;
   });
-  if(semCl2.length>0){
-   h+=`<div style="font-size:11px;color:var(--dim);font-weight:700;margin:12px 0 8px;text-transform:uppercase;padding-top:8px;border-top:1px solid var(--line)">Sem direito a tempo de TV em 2026</div>`;
-   h+=`<div style="font-size:11px;color:var(--mut);margin-bottom:8px">Não atingiram a cláusula de desempenho nas eleições de 2022 (EC 97/2017)</div>`;
-   semCl2.forEach(p=>{h+=`<div class="detail-row" style="opacity:.4"><span class="d-name">${escapeHTML(p)}</span><span class="d-val" style="color:var(--dim);font-size:10px">sem cláusula</span></div>`;});
-  }
   h+=`</div></details>`;
  }
  // Aviso se o partido selecionado não tem cláusula
