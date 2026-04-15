@@ -712,18 +712,15 @@ function renderMyChapa(){
   document.getElementById('sc2Title').textContent='Monte a chapa do seu candidato';
   document.getElementById('sc2Lead').textContent='Selecione os partidos que fazem parte da sua coligação.';
   const ch=state.minhaChapa;
-  let h=`<div class="chapa-builder"><h3>Selecione os partidos da coligação</h3>`;
-  h+=`<input type="text" placeholder="Buscar partido..." oninput="state.busca=this.value;renderMyChapa()" style="margin-bottom:10px" id="mySearch" value="${escapeHTML(state.busca||'')}">`;
-  h+=`<div class="part-grid">`;
-  const q=(state.busca||'').toLowerCase();
-  [...PARTIDOS].filter(p=>!q||p.s.toLowerCase().startsWith(q)).sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
+  let h='<input type="text" placeholder="Buscar partido..." oninput="filterMajPicker(this.value)" style="margin-bottom:16px" id="mySearch">';
+  h+='<div class="party-picker" id="majPicker">';
+  [...PARTIDOS].sort((a,b)=>a.s.localeCompare(b.s)).forEach(p=>{
    const on=ch.partidos.includes(p.s);
    const fed=getFedTag(p.s);
-   h+=`<div class="part${on?' on':''}" onclick="togMyPartV2('${p.s}')" style="justify-content:space-between"><b>${p.s}</b>${fed?'<span style="font-size:7px;color:var(--gold);text-align:right">'+fed+'</span>':''}</div>`;
+   h+=`<div class="party-pick${on?' on':''}${fed?' fed':''}" onclick="togMyPartV2('${p.s}')"><div class="sig">${p.s}</div><div class="info" style="flex:1"><b>${escapeHTML(p.n)}</b></div>${fed?'<div style="color:var(--gold);font-size:9px;text-align:right;white-space:nowrap;margin-left:8px">'+fed+'</div>':''}</div>`;
   });
-  h+=`</div></div>`;
+  h+='</div>';
   c.innerHTML=h;
-  if(state.busca){const inp=document.getElementById('mySearch');if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}}
  }else{
   document.getElementById('sc2Title').textContent='Qual é o partido do seu candidato?';
   document.getElementById('sc2Lead').textContent='Selecione o partido ou federação do seu candidato.';
@@ -760,6 +757,7 @@ function pickMyParty(s,isFed){
  isDirty=true;renderMyChapa();
 }
 function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll('.party-pick').forEach(el=>{const sig=el.querySelector('.sig')?.textContent?.toLowerCase()||'';el.style.display=(!ql||sig.startsWith(ql))?'':'none';});}
+function filterMajPicker(q){filterPartyPicker(q);}
 
 /* ========== sc3: RESULTADO APROXIMADO ========== */
 function renderApproxResult(){
