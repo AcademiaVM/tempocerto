@@ -753,18 +753,10 @@ function togMyPartV2(s){
  isDirty=true;renderMyChapa();
 }
 function pickMyParty(s,isFed){
- state.minhaChapa={partidos:[],federacoes:[],nome:''};
- if(isFed){
-  state.minhaChapa.federacoes=[s];state.minhaChapa.partidos=[...FED[s]];state.minhaChapa.nome=s;
- }else{
-  // Se o partido pertence a uma federação, selecionar a federação inteira
-  const fed=getFedTag(s);
-  if(fed){
-   state.minhaChapa.federacoes=[fed];state.minhaChapa.partidos=[...FED[fed]];state.minhaChapa.nome=s+' ('+fed+')';
-  }else{
-   state.minhaChapa.partidos=[s];state.minhaChapa.nome=s;
-  }
- }
+ state.minhaChapa={partidos:[s],federacoes:[],nome:s};
+ // Internamente guarda a federação para o cálculo, mas só marca o partido clicado na interface
+ const fed=getFedTag(s);
+ if(fed)state.minhaChapa.federacoes=[fed];
  isDirty=true;renderMyChapa();
 }
 function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll('.party-pick').forEach(el=>{const sig=el.querySelector('.sig')?.textContent?.toLowerCase()||'';el.style.display=(!ql||sig.startsWith(ql))?'':'none';});}
@@ -773,7 +765,10 @@ function filterPartyPicker(q){const ql=q.toLowerCase();document.querySelectorAll
 function renderApproxResult(){
  const k=state.cargo,v=CARGOS[k],ch=state.minhaChapa;
  if(!ch||ch.partidos.length===0){document.getElementById('sc3Content').innerHTML='<div class="hint warn">Selecione ao menos um partido.</div>';return;}
- const partidosComCl=(ch.partidos||[]).filter(p=>temClausula(p));
+ // Expandir federações: se o partido pertence a uma federação, incluir todos os membros no cálculo
+ let partidosCalc=[...(ch.partidos||[])];
+ (ch.federacoes||[]).forEach(fn=>{(FED[fn]||[]).forEach(p=>{if(!partidosCalc.includes(p))partidosCalc.push(p);});});
+ const partidosComCl=partidosCalc.filter(p=>temClausula(p));
  const suaBancada=CARGOS[k].semcol?partidosComCl.reduce((a,p)=>a+(state.bancada[p]||0),0):bancada6Maiores(partidosComCl);
  // Bancada total = soma de TODOS os partidos com cláusula
  const bt=PARTIDOS.filter(p=>p.cl).reduce((a,p)=>a+p.b,0);
@@ -967,8 +962,10 @@ function calcFull(){
  const allChapas=[{...state.minhaChapa,meu:true},...state.chapasAdversarias.filter(c=>c.ativo!==false&&c.partidos.length>0)];
  const unidades=[];
  allChapas.forEach((c,i)=>{
-  // Filtrar partidos sem cláusula
-  const partidosComCl=(c.partidos||[]).filter(p=>temClausula(p));
+  // Expandir federações: incluir todos os membros no cálculo
+  let allParts=[...(c.partidos||[])];
+  (c.federacoes||[]).forEach(fn=>{(FED[fn]||[]).forEach(p=>{if(!allParts.includes(p))allParts.push(p);});});
+  const partidosComCl=allParts.filter(p=>temClausula(p));
   if(partidosComCl.length===0)return;
   if(cfg.semcol){
    // Proporcional: cada partido/federação isolado
