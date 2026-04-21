@@ -1060,7 +1060,7 @@ function renderWeekType(){
  const grade={
   tts:[
    {k:'presidente',ic:'🇧🇷',nm:'Presidente',t:'12min30s',cor:'#C7C4FF',horarios:'📻 7:00 · 📻 12:00 · 📺 13:00 · 📺 20:30'},
-   {k:'depfed',ic:'🏢',nm:'Dep. Federal',t:'12min30s',cor:'#C7C4FF',horarios:'📻 7:12 · 📻 12:12 · 📺 13:12 · 📺 20:42'}
+   {k:'depfed',ic:'🏢',nm:'Dep. Federal',t:'12min30s',cor:'#C7C4FF',horarios:'📻 7:12:30 · 📻 12:12:30 · 📺 13:12:30 · 📺 20:42:30'}
   ],
   mqs:[
    {k:'senador',ic:'⚖',nm:'Senador',t:'7min',cor:'#FDE68A',horarios:'📻 7:00 · 📻 12:00 · 📺 13:00 · 📺 20:30'},
@@ -1075,7 +1075,7 @@ function renderWeekType(){
   const cargos=tts?grade.tts:mqs?grade.mqs:[];
   h+=`<div style="background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:100px">`;
   h+=`<div style="font-weight:800;font-size:13px;margin-bottom:6px;text-align:center">${d}</div>`;
-  if(dom){h+=`<div style="font-size:10px;color:var(--dim);text-align:center;font-style:italic;padding-top:16px">sem HGPE</div>`;}
+  if(dom){h+=`<div style="font-size:10px;color:var(--dim);text-align:center;font-style:italic;padding-top:16px">Sem bloco</div>`;}
   else{cargos.forEach(c=>{
    h+=`<div style="background:rgba(${c.cor==='#C7C4FF'?'63,59,255':'250,204,21'},.12);border-radius:4px;padding:3px 6px;margin-bottom:3px;font-size:9px;font-weight:700;color:${c.cor};white-space:nowrap">${c.ic} ${c.nm}</div>`;
   });}
