@@ -591,15 +591,16 @@ const CARGOS={
  depfed:{nm:"Dep. Federal",ic:"🏢",bolo:750,dias:"tts",semcol:true},
  depest:{nm:"Dep. Estadual",ic:"🏬",bolo:540,dias:"mqs",semcol:true}
 };
-// Inserções: 70min/dia por veículo = 4200s por veículo
-// Dias federais (TTS): 50% pres + 50% depfed (mesma proporção do bloco)
-// Dias estaduais (MQS): sen 28% + depest 36% + gov 36% (proporção 7/9/9 do bloco de 25min)
-// Em segundos por veículo: pres 2100, depfed 2100, sen 1176, depest 1512, gov 1512
-// Rádio + TV = x2
-const INSERT_DIA={presidente:4200,governador:3024,senador:2352,depfed:4200,depest:3024};
+// Inserções (Res. TSE 23.610/19, art. 48 · Res. 23.706/22, art. 8º):
+// 70min/dia por veículo ÷ 5 cargos = 14min/cargo/dia/veículo (divisão em 5 partes IGUAIS)
+// Rádio + TV = 28min/cargo/dia = 1680s — MESMO VALOR para todos os cargos
+// Rodam segunda a domingo, TODOS os cargos TODOS os dias, pelos 35 dias corridos
+// Bolo total por cargo na campanha = 14min × 35 × 2 = 980min (58.800s) — igual p/ todos
+const INSERT_DIA={presidente:1680,governador:1680,senador:1680,depfed:1680,depest:1680};
 // Período HGPE 2026: 28/ago a 01/out (Res. TSE 23.760/2026)
-// 35 dias corridos, 30 dias úteis (seg a sáb), 15 TTS + 15 MQS
-const DIAS_TTS=15,DIAS_MQS=15;
+// 35 dias corridos. Blocos em rede: 30 dias úteis (15 TTS + 15 MQS, seg a sáb)
+// Inserções: 35 dias (seg a dom)
+const DIAS_TTS=15,DIAS_MQS=15,DIAS_INSERCAO=35;
 function diasPorCargo(k){return CARGOS[k].dias==='tts'?DIAS_TTS:DIAS_MQS;}
 const bancadaTotal=()=>Object.values(state.bancada).reduce((a,b)=>a+b,0);
 
@@ -778,7 +779,8 @@ function renderApproxResult(){
  const insTotal=INSERT_DIA[k]||0;
  const insProp=bt>0?insTotal*0.9*suaBancada/bt:0;
  const insPropDia=insProp;
- const insPropPeriodo=insProp*dias;
+ // Inserções rodam 35 dias (seg a dom), não pelos dias úteis do cargo
+ const insPropPeriodo=insProp*DIAS_INSERCAO;
  const numInsercoes=Math.floor(insPropPeriodo/30);
  const blocosTV=dias*2,blocosRadio=dias*2;
  const cargoNome=k==='governador'?'Governo':k==='presidente'?'Presidência':k==='senador'?'Senado':k==='depfed'?'Deputado Federal':'Deputado Estadual';
@@ -1021,7 +1023,7 @@ function renderFullResult(){
   h+=`<div style="background:linear-gradient(160deg,rgba(63,59,255,.12),rgba(96,24,186,.06));border:1px solid rgba(63,59,255,.25);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#C7C4FF" class="has-tip" data-tip="📺 2 blocos de TV/dia\n(13h e 20h30)\n${fmtT(u.tB)} × 2 = ${fmtT(u.tB*2)}">${fmtT(u.tB*2)}</div><div style="font-size:9px;color:var(--mut);text-transform:uppercase">📺 TV/dia</div></div>`;
   h+=`<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:15px;font-weight:700;color:#86EFAC" class="has-tip" data-tip="📻 2 blocos de rádio/dia\n(7h e 12h)\n${fmtT(u.tB)} × 2 = ${fmtT(u.tB*2)}">${fmtT(u.tB*2)}</div><div style="font-size:9px;color:var(--mut);text-transform:uppercase">📻 Rádio/dia</div></div>`;
   h+=`<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:15px;font-weight:700" class="has-tip" data-tip="4 blocos/dia × ${fmtT(u.tB)}\n= ${fmtT(u.tD)}\n\nCampanha (${dias} dias):\n${fmtT(u.tD*dias)}">${fmtT(u.tD)}</div><div style="font-size:9px;color:var(--mut);text-transform:uppercase">Total/dia</div></div>`;
-  h+=`<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:15px;font-weight:700;color:var(--warn)" class="has-tip" data-tip="Inserções de 30s e 60s\nao longo da programação\n(rádio + TV combinados)">${fmtT(u.tIns)}</div><div style="font-size:9px;color:var(--mut);text-transform:uppercase">Inserções/dia</div></div>`;
+  h+=`<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:15px;font-weight:700;color:var(--warn)" class="has-tip" data-tip="Inserções de 30s e 60s\nao longo da programação\n(rádio + TV combinados)\nRodam seg a dom, ${DIAS_INSERCAO} dias\n\nCampanha inteira:\n${fmtT(u.tIns*DIAS_INSERCAO)}">${fmtT(u.tIns)}</div><div style="font-size:9px;color:var(--mut);text-transform:uppercase">Inserções/dia</div></div>`;
   h+=`</div>`;
   // Barra
   h+=`<div style="margin-top:10px"><div class="bar"><div style="width:${pctBar}%">${fmtT(u.tB)}</div></div></div>`;
