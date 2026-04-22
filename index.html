@@ -1,6 +1,22 @@
 <!doctype html>
 <html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AVM TempoCerto v7</title>
+<title>AVM TempoCerto — Simulador de Horário Eleitoral 2026</title>
+<meta name="description" content="Simulador educacional de tempo de rádio e TV no Horário Gratuito de Propaganda Eleitoral para as Eleições Gerais de 2026. Calcule a distribuição 90/10 por cargo, cláusula de desempenho e inserções, com base na Lei 9.504/97 e Res. TSE 23.610/19.">
+<meta name="keywords" content="HGPE, horário eleitoral gratuito, tempo de TV 2026, eleições 2026, Lei 9.504, TSE, cláusula de desempenho, propaganda eleitoral, marketing político, Academia Vitorino Mendonça">
+<meta name="author" content="Academia Vitorino &amp; Mendonça">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#0B0B14">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="AVM TempoCerto">
+<meta property="og:title" content="AVM TempoCerto — Simulador de Horário Eleitoral 2026">
+<meta property="og:description" content="Calcule quanto tempo de rádio e TV a sua chapa terá no HGPE 2026. Baseado em Lei 9.504/97, Res. TSE 23.610/19 e o Guia v4 da Academia Vitorino &amp; Mendonça.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AVM TempoCerto — Simulador de Horário Eleitoral 2026">
+<meta name="twitter:description" content="Simulador educacional de HGPE para as Eleições Gerais 2026.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%233F3BFF'/><stop offset='1' stop-color='%236018BA'/></linearGradient></defs><rect width='64' height='64' rx='12' fill='url(%23g)'/><text x='50%25' y='56%25' font-family='-apple-system,Helvetica,sans-serif' font-size='22' font-weight='900' fill='white' text-anchor='middle' dominant-baseline='middle'>AVM</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%233F3BFF'/><stop offset='1' stop-color='%236018BA'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23g)'/><text x='50%25' y='56%25' font-family='-apple-system,Helvetica,sans-serif' font-size='60' font-weight='900' fill='white' text-anchor='middle' dominant-baseline='middle'>AVM</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -50,14 +66,14 @@ p.lead{color:var(--mut);font-size:14px;margin-bottom:24px;max-width:640px}
 
 /* INPUTS & BUTTONS */
 label{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:700}
-input[type=text],input[type=number],input[type=email],input[type=password],input[type=tel],select{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:11px 14px;font-size:14px;width:100%}
+input[type=text],input[type=number],input[type=email],input[type=password],input[type=tel],select{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:11px 14px;font-size:16px;min-height:44px;width:100%}
 input:focus,select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(63,59,255,.15)}
-.btn{background:linear-gradient(90deg,var(--purple),var(--deep));color:#fff;padding:12px 22px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:uppercase;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+.btn{background:linear-gradient(90deg,var(--purple),var(--deep));color:#fff;padding:12px 22px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:uppercase;display:inline-flex;align-items:center;gap:8px;transition:all .2s;min-height:44px}
 .btn:hover{filter:brightness(1.15);box-shadow:0 4px 20px rgba(63,59,255,.3);transform:translateY(-1px)}
 .btn:active{transform:translateY(0);box-shadow:none}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
 .btn.ghost:hover{background:var(--bg3);border-color:var(--purple)}
-.btn.sm{padding:7px 14px;font-size:12px}
+.btn.sm{padding:7px 14px;font-size:12px;min-height:0}
 .btn.danger{background:transparent;border:1px solid var(--err);color:#FCA5A5}
 .btn.lg{padding:16px 32px;font-size:16px;border-radius:14px}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px}
@@ -211,7 +227,7 @@ tr.meu td:first-child::before{content:"⭐ "}
 .bench-row{display:grid;grid-template-columns:60px 1fr 90px;gap:10px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(42,42,74,.5)}
 .bench-row b{font-weight:700}
 .bench-row .nm{color:var(--mut);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bench-row input{padding:6px 10px;font-size:13px}
+.bench-row input{padding:6px 10px;font-size:16px;min-height:36px}
 .memo{background:#08081A;border:1px solid var(--line);border-radius:8px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;max-height:420px;overflow-y:auto;white-space:pre-wrap;color:#B8B8E0;line-height:1.75}
 details summary{cursor:pointer;padding:10px 14px;background:var(--bg3);border-radius:8px;font-weight:700;font-size:13px;user-select:none}
 details[open] summary{margin-bottom:10px}
@@ -361,8 +377,10 @@ body>*{position:relative;z-index:1}
    <input type="text" id="authName" placeholder="Seu nome completo">
    <input type="email" id="authEmailS" placeholder="E-mail">
    <input type="password" id="authPassS" placeholder="Senha (mínimo 6 caracteres)">
+   <input type="password" id="authPassS2" placeholder="Confirme a senha">
    <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:12px"><input type="text" id="authDDD" placeholder="DDD" maxlength="2" style="text-align:center"><input type="tel" id="authPhone" placeholder="Telefone"></div>
    <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:12px"><select id="authUF" style="font-size:13px"><option value="">UF</option></select><input type="text" id="authCity" placeholder="Cidade"></div>
+   <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--mut);margin-bottom:12px;line-height:1.5;cursor:pointer"><input type="checkbox" id="authConsent" style="margin-top:3px;flex-shrink:0"><span>Li e aceito a <a href="privacy.html" target="_blank" style="color:var(--pri);text-decoration:underline">Política de Privacidade</a> e os <a href="terms.html" target="_blank" style="color:var(--pri);text-decoration:underline">Termos de Uso</a>. Autorizo o tratamento dos meus dados conforme a LGPD (Lei 13.709/2018).</span></label>
    <button class="btn" onclick="doEmailSignup()">Criar conta</button>
    <div class="divider"><span>ou</span></div>
    <button class="btn-google" onclick="doGoogleAuth()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Criar com Google</button>
@@ -374,22 +392,22 @@ body>*{position:relative;z-index:1}
 <!-- HEADER -->
 <header style="display:none" id="appHeader">
  <div class="header-top">
-  <div class="brand" onclick="goStep(0)"><div class="logo">AVM</div><h1>TempoCerto <span>v7</span></h1></div>
-  <div class="user-bar"><b id="userName" onclick="openProfile()" style="cursor:pointer"></b><button onclick="openProfile()">Perfil</button><button onclick="doLogout()">Sair</button></div>
+  <div class="brand" onclick="goStep(0)" role="button" tabindex="0" aria-label="Voltar à página inicial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goStep(0);}"><div class="logo" aria-hidden="true">AVM</div><h1>TempoCerto <span>v7</span></h1></div>
+  <div class="user-bar"><b id="userName" onclick="openProfile()" style="cursor:pointer" role="button" tabindex="0" aria-label="Abrir meu perfil" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfile();}"></b><button onclick="openProfile()" aria-label="Abrir perfil">Perfil</button><button onclick="doLogout()" aria-label="Sair da conta">Sair</button></div>
  </div>
 </header>
 
 <main style="display:none" id="appMain">
 <!-- sc0: HOME -->
 <div class="screen on" id="sc0">
- <div class="home-hero" onclick="newScenario();goStep(1)">
-  <div class="plus">+</div>
+ <div class="home-hero" onclick="newScenario();goStep(1)" role="button" tabindex="0" aria-label="Criar novo cenário de simulação" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();newScenario();goStep(1);}">
+  <div class="plus" aria-hidden="true">+</div>
   <h2>Criar novo cenário</h2>
   <p>Descubra quanto tempo de TV e rádio a sua chapa vai ter</p>
  </div>
  <div class="home-saved" id="homeSaved"></div>
  <div id="homeWeek"></div>
- <div style="margin-top:20px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));border:1.5px solid rgba(245,158,11,.4);border-radius:12px;padding:16px 20px;text-align:center"><div style="font-size:20px;margin-bottom:6px">⚠️</div><div style="font-size:13px;font-weight:700;color:#FCD34D;margin-bottom:4px">Atenção: cálculo aproximado</div><div style="font-size:12px;color:var(--txt);line-height:1.6">Os valores apresentados têm <b>caráter educativo e estimativo</b>. Consulte seu <b>advogado eleitoral</b> e o <b>TRE/TSE</b> para validar os números antes de tomar decisões.</div></div>
+ <div style="margin-top:20px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));border:1.5px solid rgba(245,158,11,.4);border-radius:12px;padding:16px 20px;text-align:center"><div style="font-size:20px;margin-bottom:6px">⚠️</div><div style="font-size:13px;font-weight:700;color:#FCD34D;margin-bottom:4px">Simulador educacional · cálculo estimativo</div><div style="font-size:12px;color:var(--txt);line-height:1.6">Baseado na <b>Lei 9.504/97</b>, <b>Res. TSE 23.610/19</b> (redação 23.671/21 e 23.755/26), <b>Res. TSE 23.706/22</b> e <b>Res. TSE 23.760/26</b>. Não substitui consultoria jurídica oficial. Consulte seu <b>advogado eleitoral</b> e o <b>TRE/TSE</b> antes de tomar decisões.</div></div>
 </div>
 
 <!-- sc1: TIPO DE ELEICAO -->
@@ -463,6 +481,17 @@ body>*{position:relative;z-index:1}
 </div>
 </main>
 
+<footer id="appFooter" style="display:none;padding:24px 20px 40px;text-align:center;font-size:11px;color:var(--mut);border-top:1px solid var(--line);margin-top:24px;line-height:1.8">
+ <div style="margin-bottom:6px"><b style="color:var(--txt)">AVM TempoCerto</b> · Academia Vitorino &amp; Mendonça</div>
+ <div style="margin-bottom:8px">Simulador educacional do Horário Gratuito de Propaganda Eleitoral · Eleições Gerais 2026</div>
+ <div>
+  <a href="privacy.html" target="_blank" style="color:var(--mut);text-decoration:underline;margin:0 8px">Política de Privacidade</a>·
+  <a href="terms.html" target="_blank" style="color:var(--mut);text-decoration:underline;margin:0 8px">Termos de Uso</a>·
+  <a href="mailto:contato@academiavm.com.br" style="color:var(--mut);text-decoration:underline;margin:0 8px">Contato</a>
+ </div>
+ <div style="margin-top:10px;font-size:10px;opacity:.7">Este simulador não é vinculado ao TSE/TRE. Os cálculos têm caráter estimativo.</div>
+</footer>
+
 <!-- MODALS -->
 <div class="modal" id="mCompare" role="dialog" aria-label="Comparar cenários"><div class="modal-box" style="max-width:560px">
  <div class="modal-h"><h3>⚖ Comparar cenários</h3><button class="btn ghost sm" onclick="closeModal('mCompare')">✕</button></div>
@@ -491,11 +520,26 @@ body>*{position:relative;z-index:1}
   <label>Localização</label>
   <div style="display:grid;grid-template-columns:80px 1fr;gap:8px"><select id="profUF"><option value="">UF</option></select><input type="text" id="profCity" placeholder="Cidade"></div>
   <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)">E-mail: <b id="profEmail" style="color:var(--txt)"></b></div>
+  <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+   <div style="font-size:12px;color:var(--mut);margin-bottom:8px;line-height:1.5">Conforme a LGPD (art. 18), você pode solicitar a exclusão definitiva da sua conta e de todos os seus dados salvos (cenários, perfil). Esta ação é <b>irreversível</b>.</div>
+   <button class="btn ghost sm" onclick="deleteAccount()" style="color:#EF4444;border-color:rgba(239,68,68,.4)">Excluir minha conta e dados</button>
+  </div>
  </div>
  <div class="modal-f"><button class="btn ghost" onclick="closeModal('mProfile')">Cancelar</button><button class="btn" onclick="saveProfile()">Salvar</button></div>
 </div></div>
 
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>
+
+<!-- COOKIE CONSENT BANNER -->
+<div id="cookieBanner" role="dialog" aria-label="Aviso sobre cookies" style="display:none;position:fixed;bottom:16px;left:16px;right:16px;max-width:720px;margin:0 auto;z-index:200;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-size:13px;line-height:1.6;color:var(--txt)">
+ <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+   <b style="display:block;margin-bottom:4px">🍪 Usamos apenas cookies essenciais</b>
+   <span style="color:var(--mut);font-size:12px">Eles mantêm sua sessão autenticada e são obrigatórios para o funcionamento do app. Não usamos cookies de rastreamento publicitário. Detalhes na <a href="privacy.html" target="_blank" style="color:var(--purple);text-decoration:underline">Política de Privacidade</a>.</span>
+  </div>
+  <button class="btn sm" onclick="dismissCookieBanner()" aria-label="Entendi, fechar aviso de cookies" style="align-self:center">Entendi</button>
+ </div>
+</div>
 
 <script>
 console.log('%cTempoCerto v7','color:#3F3BFF;font-weight:bold;font-size:14px');
@@ -520,20 +564,56 @@ function showAuthErr(m){document.getElementById('authErr').textContent=m;}
 function toggleAuth(){const l=document.getElementById('authFormLogin'),s=document.getElementById('authFormSignup');if(l.style.display==='none'){l.style.display='';s.style.display='none';}else{l.style.display='none';s.style.display='';}showAuthErr('');}
 async function doEmailAuth(){showAuthErr('');const e=document.getElementById('authEmail').value.trim(),p=document.getElementById('authPass').value;if(!e||!p){showAuthErr('Preencha e-mail e senha.');return;}try{await auth.signInWithEmailAndPassword(e,p);}catch(err){showAuthErr(translateAuthError(err.code));}}
 async function doEmailSignup(){showAuthErr('');
- const n=document.getElementById('authName').value.trim(),e=document.getElementById('authEmailS').value.trim(),p=document.getElementById('authPassS').value;
+ const n=document.getElementById('authName').value.trim(),e=document.getElementById('authEmailS').value.trim(),p=document.getElementById('authPassS').value,p2=document.getElementById('authPassS2').value;
  const ddd=document.getElementById('authDDD').value.trim(),phone=document.getElementById('authPhone').value.trim(),uf=document.getElementById('authUF').value,city=document.getElementById('authCity').value.trim();
+ const consent=document.getElementById('authConsent').checked;
  if(!n){showAuthErr('Preencha seu nome.');return;}
  if(!e){showAuthErr('Preencha seu e-mail.');return;}
  if(!p||p.length<6){showAuthErr('Senha deve ter no mínimo 6 caracteres.');return;}
+ if(p!==p2){showAuthErr('As senhas não coincidem.');return;}
  if(!ddd||!phone){showAuthErr('Preencha DDD e telefone.');return;}
  if(!uf){showAuthErr('Selecione seu estado.');return;}
  if(!city){showAuthErr('Preencha sua cidade.');return;}
+ if(!consent){showAuthErr('Você precisa aceitar a Política de Privacidade e os Termos de Uso.');return;}
  try{const c=await auth.createUserWithEmailAndPassword(e,p);await c.user.updateProfile({displayName:n});
-  await db.collection('users').doc(c.user.uid).set({nome:n,email:e,ddd,phone,uf,city,profileComplete:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  await db.collection('users').doc(c.user.uid).set({nome:n,email:e,ddd,phone,uf,city,profileComplete:true,consentAcceptedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  try{await c.user.sendEmailVerification();showToast('Enviamos um e-mail de verificação para '+e);}catch(_){}
  }catch(err){showAuthErr(translateAuthError(err.code));}}
 async function doGoogleAuth(){showAuthErr('');try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(err){showAuthErr(translateAuthError(err.code));}}
 async function doForgotPassword(){showAuthErr('');const e=document.getElementById('authEmail').value.trim();if(!e){showAuthErr('Digite seu e-mail acima.');return;}try{await auth.sendPasswordResetEmail(e);alert('E-mail de recuperação enviado para '+e);}catch(err){showAuthErr(translateAuthError(err.code));}}
 function doLogout(){auth.signOut();}
+function dismissCookieBanner(){try{localStorage.setItem('avm_cookie_ack','1');}catch(_){}const b=document.getElementById('cookieBanner');if(b)b.style.display='none';}
+(function initCookieBanner(){try{if(localStorage.getItem('avm_cookie_ack')==='1')return;}catch(_){}document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('cookieBanner');if(b)b.style.display='block';});})();
+async function deleteAccount(){
+ if(!currentUser){return;}
+ const email=currentUser.email||'';
+ const ok=confirm('ATENÇÃO: esta ação é irreversível.\n\nTodos os seus cenários, perfil e dados serão excluídos permanentemente, e sua conta será removida.\n\nDeseja realmente excluir sua conta e todos os dados?');
+ if(!ok)return;
+ const confirmEmail=prompt('Para confirmar, digite seu e-mail ('+email+'):');
+ if(!confirmEmail||confirmEmail.trim().toLowerCase()!==email.toLowerCase()){showToast('E-mail não confere. Exclusão cancelada.','err');return;}
+ try{
+  showLoading('Excluindo seus dados...');
+  const uid=currentUser.uid;
+  // Apaga subcoleção scenarios
+  const snap=await db.collection('users').doc(uid).collection('scenarios').get();
+  const batch=db.batch();
+  snap.forEach(d=>batch.delete(d.ref));
+  batch.delete(db.collection('users').doc(uid));
+  await batch.commit();
+  // Apaga a conta de autenticação
+  await currentUser.delete();
+  hideLoading();
+  showToast('Conta e dados excluídos.');
+ }catch(err){
+  hideLoading();
+  if(err&&err.code==='auth/requires-recent-login'){
+   alert('Por segurança, faça login novamente para concluir a exclusão.');
+   try{await auth.signOut();}catch(_){}
+  }else{
+   showToast('Erro ao excluir: '+(err.message||err.code||err),'err');
+  }
+ }
+}
 
 /* ========== DATA ========== */
 const UFS=["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
@@ -645,8 +725,8 @@ async function checkProfileComplete(){
 }
 auth.onAuthStateChanged(async user=>{
  currentUser=user;
- if(user){document.getElementById('authScreen').style.display='none';document.getElementById('appHeader').style.display='';document.getElementById('appMain').style.display='';document.getElementById('userName').textContent=user.displayName||user.email;showLoading('Carregando seus cenários...');await loadScenariosFromFirestore();hideLoading();renderHome();await checkProfileComplete();}
- else{hideLoading();document.getElementById('authScreen').style.display='';document.getElementById('appHeader').style.display='none';document.getElementById('appMain').style.display='none';}
+ if(user){document.getElementById('authScreen').style.display='none';document.getElementById('appHeader').style.display='';document.getElementById('appMain').style.display='';document.getElementById('appFooter').style.display='';document.getElementById('userName').textContent=user.displayName||user.email;showLoading('Carregando seus cenários...');await loadScenariosFromFirestore();hideLoading();renderHome();await checkProfileComplete();}
+ else{hideLoading();document.getElementById('authScreen').style.display='';document.getElementById('appHeader').style.display='none';document.getElementById('appMain').style.display='none';document.getElementById('appFooter').style.display='none';}
 });
 
 /* ========== INIT ========== */
@@ -894,7 +974,7 @@ function renderRivals(){
   h+=`<div class="party-picker">`;
   adv.forEach((c,idx)=>{
    const fed=c.federacoes.length?c.federacoes[0]:'';
-   h+=`<div class="party-pick${c.ativo===false?'':' on'}" onclick="togAdvProp(${idx})" style="${c.ativo===false?'opacity:.35':''}"><div class="sig">${escapeHTML(c.nome)}</div><div class="info">${fed?'<span style="color:var(--gold);font-size:10px">'+fed+'</span>':''}</div></div>`;
+   h+=`<div class="party-pick${c.ativo===false?'':' on'}" onclick="togAdvProp(${idx})" style="${c.ativo===false?'opacity:.35':''}"><div class="sig">${escapeHTML(c.nome||c.partidos.join('+')||('Chapa '+(idx+1)))}</div><div class="info">${fed?'<span style="color:var(--gold);font-size:10px">'+fed+'</span>':''}</div></div>`;
   });
   h+=`</div>`;
  }else{
@@ -917,7 +997,7 @@ function initPropAdv(){
 function togAdvProp(i){state.chapasAdversarias[i].ativo=state.chapasAdversarias[i].ativo===false;renderRivals();}
 function propAdvAll(v){state.chapasAdversarias.forEach(c=>c.ativo=v);renderRivals();}
 function propAdvBancada(){state.chapasAdversarias.forEach(c=>{c.ativo=c.partidos.reduce((a,p)=>a+(state.bancada[p]||0),0)>0;});renderRivals();}
-function addRival(){state.chapasAdversarias.push({partidos:[],federacoes:[],nome:''});isDirty=true;renderRivals();}
+function addRival(){const n=state.chapasAdversarias.length+1;state.chapasAdversarias.push({partidos:[],federacoes:[],nome:'Chapa '+n,ativo:true});isDirty=true;renderRivals();}
 function removeRival(i){state.chapasAdversarias.splice(i,1);isDirty=true;renderRivals();}
 function renderRivalChapa(ch,idx){
  const usados=new Set();state.chapasAdversarias.forEach((c,ci)=>{if(ci!==idx)c.partidos.forEach(p=>usados.add(p));});state.minhaChapa.partidos.forEach(p=>usados.add(p));
@@ -1136,6 +1216,9 @@ function openSave(){const n=document.getElementById('scName');document.getElemen
 async function doSave(){
  let nome=document.getElementById('sName').value.trim();
  if(!nome){const cargoNm=state.cargo&&CARGOS[state.cargo]?CARGOS[state.cargo].nm:'Cenário';nome=cargoNm+' — '+new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});document.getElementById('sName').value=nome;}
+ // Preenche nomes vazios de chapas adversárias com fallback inteligente
+ state.chapasAdversarias.forEach((c,i)=>{if(!c.nome||!c.nome.trim()){c.nome=c.partidos.join('+')||('Chapa '+(i+1));}});
+ if(state.minhaChapa&&(!state.minhaChapa.nome||!state.minhaChapa.nome.trim())){state.minhaChapa.nome=state.minhaChapa.partidos.join('+')||'Minha chapa';}
  const arr=loadStore(),now=new Date().toISOString();state.fase=state.chapasAdversarias.length>0?'completo':'aproximado';
  if(activeScn.id){const i=arr.findIndex(s=>s.id===activeScn.id);if(i>=0){arr[i]={...arr[i],nome,type:state.type,cargo:state.cargo,data:snapshot(),updatedAt:now};await saveScenarioToFirestore(arr[i]);}}
  else{const novo={id:'scn-'+Date.now(),nome,type:state.type,cargo:state.cargo,data:snapshot(),updatedAt:now};arr.push(novo);activeScn.id=novo.id;await saveScenarioToFirestore(novo);}
